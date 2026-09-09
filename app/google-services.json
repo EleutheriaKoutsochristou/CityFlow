@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "86543154040",
+    "project_id": "cityflow-e0360",
+    "storage_bucket": "cityflow-e0360.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:86543154040:android:78b6f0b35ddf1d5627668d",
+        "android_client_info": {
+          "package_name": "com.example.cityflow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZQZUXgABPq_q73mdQLpVL2sZvpbJNIM0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

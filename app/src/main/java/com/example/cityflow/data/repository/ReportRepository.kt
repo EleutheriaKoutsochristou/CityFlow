@@ -1,0 +1,176 @@
+package com.example.cityflow.data.repository
+
+import com.example.cityflow.data.model.Report
+import com.example.cityflow.data.model.ReportStatus
+import com.example.cityflow.data.model.Resource
+import com.example.cityflow.domain.DistanceCalculator
+import com.example.cityflow.domain.PriorityCalculator
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
+
+/**
+ * Repository για τη διαχείριση των αναφορών (Reports) στο Firestore.
+ * Υποστηρίζει Real-time συγχρονισμό μέσω Flow για άμεση ενημέρωση όλων των χρηστών.
+ */
+class ReportRepository(
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+) {
+
+    private val reportsCollection = firestore.collection("reports")
+
+    /**
+     * Υποβολή νέας αναφοράς:
+     * 1. Ανακτά τις υπάρχουσες πρόσφατες αναφορές.
+     * 2. Υπολογίζει το αρχικό PriorityScore μέσω του PriorityCalculator.
+     * 3. Αποθηκεύει την αναφορά στο Firestore.
+     */
+    suspend fun submitReport(report: Report): Resource<String> {
+        return try {
+            val docRef = if (report.id.isBlank()) {
+                reportsCollection.document()
+            } else {
+                reportsCollection.document(report.id)
+            }
+
+            val docId = docRef.id
+
+            // Ανάκτηση πρόσφατων αναφορών για τον υπολογισμό του PriorityScore
+            val recentSnapshots = reportsCollection
+                .whereEqualTo("category", report.category)
+                .get()
+                .await()
+
+            val existingReports = recentSnapshots.toObjects(Report::class.java)
+
+            // Εύρεση παρόμοιων αναφορών και υπολογισμός σκορ
+            val similarReports = PriorityCalculator.findSimilarReports(report, existingReports)
+            val calculatedScore = PriorityCalculator.calculateScore(report, existingReports)
+
+            val finalReport = report.copy(
+                id = docId,
+                priorityScore = calculatedScore,
+                similarReportsCount = similarReports.size + 1
+            )
+
+            docRef.set(finalReport).await()
+            Resource.Success(docId)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Αποτυχία υποβολής αναφοράς.", e)
+        }
+    }
+
+    /**
+     * Real-time ροή (Flow) όλων των αναφορών ταξινομημένων κατά ημερομηνία (νεότερες πρώτα).
+     * Ιδανικό για την οθόνη του υπαλλήλου.
+     */
+    fun getAllReportsFlow(): Flow<List<Report>> = callbackFlow {
+        val listener = reportsCollection
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val reports = snapshot.toObjects(Report::class.java)
+                    trySend(reports)
+                }
+            }
+        awaitClose { listener.remove() }
+    }
+
+    /**
+     * Real-time ροή (Flow) των αναφορών ενός συγκεκριμένου χρήστη (για την οθόνη ιστορικού).
+     */
+    fun getUserReportsFlow(userId: String): Flow<List<Report>> = callbackFlow {
+        val listener = reportsCollection
+            .whereEqualTo("userId", userId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val reports = snapshot.toObjects(Report::class.java)
+                        .sortedByDescending { it.timestamp }
+                    trySend(reports)
+                }
+            }
+        awaitClose { listener.remove() }
+    }
+
+    /**
+     * Ενημέρωση κατάστασης αναφοράς από τον υπάλληλο (Επικύρωση, Απόρριψη, Επίλυση κ.λπ.).
+     */
+    suspend fun updateReportStatus(
+        reportId: String,
+        newStatus: ReportStatus,
+        verifiedBy: String? = null,
+        practicalAdvice: String? = null
+    ): Resource<Unit> {
+        return try {
+            val updates = mutableMapOf<String, Any>(
+                "status" to newStatus.name
+            )
+
+            if (newStatus == ReportStatus.VERIFIED) {
+                updates["verifiedAt"] = System.currentTimeMillis()
+                if (verifiedBy != null) updates["verifiedBy"] = verifiedBy
+                if (!practicalAdvice.isNullOrBlank()) updates["practicalAdvice"] = practicalAdvice
+            }
+
+            reportsCollection.document(reportId).update(updates).await()
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Αποτυχία ενημέρωσης κατάστασης.", e)
+        }
+    }
+
+    /**
+     * Φιλτράρισμα επικυρωμένων αναφορών που βρίσκονται εντός της ακτίνας ειδοποίησης
+     * από την τρέχουσα τοποθεσία του χρήστη.
+     */
+    fun filterNearbyVerifiedReports(
+        reports: List<Report>,
+        userLat: Double,
+        userLon: Double
+    ): List<Report> {
+        return reports.filter { report ->
+            // Μόνο επικυρωμένες ή σε εξέλιξη αναφορές
+            val isActive = report.status == ReportStatus.VERIFIED.name ||
+                    report.status == ReportStatus.IN_PROGRESS.name
+
+            if (!isActive) return@filter false
+
+            val radius = if (report.notificationRadiusMeters > 0) {
+                report.notificationRadiusMeters
+            } else {
+                report.reportCategory.defaultRadiusMeters
+            }
+
+            DistanceCalculator.isWithinRadius(
+                userLat = userLat,
+                userLon = userLon,
+                eventLat = report.latitude,
+                eventLon = report.longitude,
+                radiusMeters = radius
+            )
+        }
+    }
+
+    /**
+     * Διαγραφή αναφοράς (π.χ. από διαχειριστή).
+     */
+    suspend fun deleteReport(reportId: String): Resource<Unit> {
+        return try {
+            reportsCollection.document(reportId).delete().await()
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Αποτυχία διαγραφής αναφοράς.", e)
+        }
+    }
+}
