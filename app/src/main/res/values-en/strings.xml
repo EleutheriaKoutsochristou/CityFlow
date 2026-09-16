@@ -1,0 +1,96 @@
+<resources>
+    <string name="app_name">CityFlow</string>
+    <string name="app_tagline">Smart Urban Mobility &amp; Accessibility</string>
+
+    <!-- Authentication -->
+    <string name="login">Sign In</string>
+    <string name="register">Register</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="full_name">Full Name</string>
+    <string name="select_role">Select Role</string>
+    <string name="role_citizen">Citizen</string>
+    <string name="role_employee">Municipality / Transit Officer</string>
+    <string name="role_citizen_desc">Submit reports and receive nearby alerts</string>
+    <string name="role_employee_desc">Review, verify and manage incident reports</string>
+    <string name="no_account">Don\'t have an account? Sign up</string>
+    <string name="have_account">Already have an account? Sign in</string>
+    <string name="logging_in">Signing in…</string>
+    <string name="registering">Registering…</string>
+    <string name="logout">Sign Out</string>
+    <string name="error_fill_all_fields">Please fill in all fields.</string>
+    <string name="error_invalid_email">Invalid email address.</string>
+    <string name="error_short_password">Password must be at least 6 characters.</string>
+
+    <!-- Navigation & Titles -->
+    <string name="nav_feed">Alerts</string>
+    <string name="nav_new_report">New Report</string>
+    <string name="nav_my_reports">History</string>
+    <string name="nav_dashboard">Management</string>
+    <string name="nav_stats">Statistics</string>
+
+    <!-- Report Submission -->
+    <string name="submit_report_title">Submit Incident Report</string>
+    <string name="category_label">Problem Category</string>
+    <string name="category_select">Select category</string>
+    <string name="description_label">Description / Comments</string>
+    <string name="description_hint">Describe the obstacle or malfunction…</string>
+    <string name="location_section">Incident Location</string>
+    <string name="location_fetching">Acquiring GPS location…</string>
+    <string name="location_obtained">GPS coordinates acquired</string>
+    <string name="location_retry">Refresh Location</string>
+    <string name="location_permission_needed">Location permission required for automatic GPS tag.</string>
+    <string name="photo_section">Photo (Optional)</string>
+    <string name="take_photo">Take / Select Photo</string>
+    <string name="remove_photo">Remove</string>
+    <string name="btn_submit_report">Submit Report</string>
+    <string name="report_submitting">Submitting report…</string>
+    <string name="report_submit_success">Report submitted successfully!</string>
+
+    <!-- Employee Actions -->
+    <string name="employee_dashboard_title">Incident Management Dashboard</string>
+    <string name="priority_score">Priority</string>
+    <string name="priority_level">Level: %1$s (Score: %2$.1f)</string>
+    <string name="similar_reports_count">Similar reports in area: %1$d</string>
+    <string name="btn_verify">Verify</string>
+    <string name="btn_reject">Reject</string>
+    <string name="btn_in_progress">In Progress</string>
+    <string name="btn_resolve">Resolve</string>
+    <string name="status_label">Status: %1$s</string>
+    <string name="advice_label">Practical Advice</string>
+    <string name="action_success">Status updated successfully.</string>
+
+    <!-- Alerts & Feed -->
+    <string name="nearby_alerts_title">Nearby Mobility Alerts</string>
+    <string name="no_nearby_alerts">No verified incidents in your immediate vicinity.</string>
+    <string name="distance_away">Distance: %1$s</string>
+    <string name="advice_prefix">Advice: %1$s</string>
+
+    <!-- Statistics -->
+    <string name="stats_title">Statistics &amp; History</string>
+    <string name="total_reports_submitted">Total Reports</string>
+    <string name="verified_reports_count">Verified</string>
+    <string name="resolved_reports_count">Resolved</string>
+    <string name="nearby_alerts_received">Nearby Alerts</string>
+    <string name="category_breakdown">Category Breakdown</string>
+
+    <!-- Settings / Theme / Language -->
+    <string name="theme_toggle">Dark Mode</string>
+    <string name="language_toggle">Change Language</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Admin Panel -->
+    <string name="admin_dashboard_title">Admin Control Panel</string>
+    <string name="role_admin">Administrator</string>
+    <string name="role_admin_desc">Manage algorithm parameters, radii and system oversight</string>
+    <string name="admin_weights_title">Priority Algorithm Parameters</string>
+    <string name="admin_weight_count">Reports Count Weight (w1): %1$.1f</string>
+    <string name="admin_weight_proximity">Spatial Proximity Weight (w2): %1$.1f</string>
+    <string name="admin_weight_severity">Category Severity Weight (w3): %1$.1f</string>
+    <string name="admin_save_weights">Apply Parameters</string>
+    <string name="admin_weights_saved">Parameters updated successfully!</string>
+    <string name="admin_view_employee_dashboard">View Employee Dashboard</string>
+    <string name="admin_switch_to_admin">Admin Settings</string>
+    <string name="admin_category_radii_title">Default Notification Radii</string>
+</resources>
