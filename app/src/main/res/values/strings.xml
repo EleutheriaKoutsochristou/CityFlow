@@ -1,3 +1,96 @@
 <resources>
     <string name="app_name">CityFlow</string>
+    <string name="app_tagline">Έξυπνη ενημέρωση για αστική κινητικότητα</string>
+
+    <!-- Authentication -->
+    <string name="login">Σύνδεση</string>
+    <string name="register">Εγγραφή</string>
+    <string name="email">Email</string>
+    <string name="password">Κωδικός πρόσβασης</string>
+    <string name="full_name">Ονοματεπώνυμο</string>
+    <string name="select_role">Επιλέξτε Ρόλο</string>
+    <string name="role_citizen">Πολίτης</string>
+    <string name="role_employee">Υπάλληλος Δήμου / Μεταφορών</string>
+    <string name="role_citizen_desc">Υποβολή αναφορών και λήψη κοντινών ειδοποιήσεων</string>
+    <string name="role_employee_desc">Έλεγχος, επικύρωση και διαχείριση αναφορών</string>
+    <string name="no_account">Δεν έχετε λογαριασμό; Εγγραφείτε</string>
+    <string name="have_account">Έχετε ήδη λογαριασμό; Συνδεθείτε</string>
+    <string name="logging_in">Σύνδεση σε εξέλιξη…</string>
+    <string name="registering">Εγγραφή σε εξέλιξη…</string>
+    <string name="logout">Αποσύνδεση</string>
+    <string name="error_fill_all_fields">Παρακαλώ συμπληρώστε όλα τα πεδία.</string>
+    <string name="error_invalid_email">Μη έγκυρη διεύθυνση email.</string>
+    <string name="error_short_password">Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες.</string>
+
+    <!-- Navigation & Titles -->
+    <string name="nav_feed">Ειδοποιήσεις</string>
+    <string name="nav_new_report">Νέα Αναφορά</string>
+    <string name="nav_my_reports">Ιστορικό</string>
+    <string name="nav_dashboard">Διαχείριση</string>
+    <string name="nav_stats">Στατιστικά</string>
+
+    <!-- Report Submission -->
+    <string name="submit_report_title">Υποβολή Αναφοράς</string>
+    <string name="category_label">Κατηγορία Προβλήματος</string>
+    <string name="category_select">Επιλέξτε κατηγορία</string>
+    <string name="description_label">Περιγραφή / Σχόλια</string>
+    <string name="description_hint">Περιγράψτε το εμπόδιο ή τη δυσλειτουργία…</string>
+    <string name="location_section">Τοποθεσία Συμβάντος</string>
+    <string name="location_fetching">Λήψη στίγματος GPS…</string>
+    <string name="location_obtained">Συντεταγμένες GPS ελήφθησαν</string>
+    <string name="location_retry">Ανανέωση τοποθεσίας</string>
+    <string name="location_permission_needed">Απαιτείται άδεια τοποθεσίας για αυτόματο στίγμα.</string>
+    <string name="photo_section">Φωτογραφία (Προαιρετικά)</string>
+    <string name="take_photo">Λήψη Φωτογραφίας</string>
+    <string name="remove_photo">Αφαίρεση</string>
+    <string name="btn_submit_report">Υποβολή Αναφοράς</string>
+    <string name="report_submitting">Αποστολή αναφοράς…</string>
+    <string name="report_submit_success">Η αναφορά υποβλήθηκε επιτυχώς!</string>
+
+    <!-- Employee Actions -->
+    <string name="employee_dashboard_title">Πίνακας Ελέγχου Αναφορών</string>
+    <string name="priority_score">Προτεραιότητα</string>
+    <string name="priority_level">Επίπεδο: %1$s (Σκορ: %2$.1f)</string>
+    <string name="similar_reports_count">Παρόμοιες αναφορές στην περιοχή: %1$d</string>
+    <string name="btn_verify">Επικύρωση</string>
+    <string name="btn_reject">Απόρριψη</string>
+    <string name="btn_in_progress">Σε Εξέλιξη</string>
+    <string name="btn_resolve">Επίλυση</string>
+    <string name="status_label">Κατάσταση: %1$s</string>
+    <string name="advice_label">Πρακτική Οδηγία</string>
+    <string name="action_success">Η κατάσταση ενημερώθηκε επιτυχώς.</string>
+
+    <!-- Alerts & Feed -->
+    <string name="nearby_alerts_title">Κοντινά Προβλήματα Κινητικότητας</string>
+    <string name="no_nearby_alerts">Δεν υπάρχουν επικυρωμένα προβλήματα στην περιοχή σας.</string>
+    <string name="distance_away">Απόσταση: %1$s</string>
+    <string name="advice_prefix">Οδηγία: %1$s</string>
+
+    <!-- Statistics -->
+    <string name="stats_title">Στατιστικά &amp; Ιστορικό</string>
+    <string name="total_reports_submitted">Σύνολο Αναφορών</string>
+    <string name="verified_reports_count">Επικυρωμένες</string>
+    <string name="resolved_reports_count">Επιλυμένες</string>
+    <string name="nearby_alerts_received">Κοντινές Ειδοποιήσεις</string>
+    <string name="category_breakdown">Κατανομή ανά Κατηγορία</string>
+
+    <!-- Settings / Theme / Language -->
+    <string name="theme_toggle">Σκοτεινή λειτουργία (Dark Mode)</string>
+    <string name="language_toggle">Αλλαγή Γλώσσας</string>
+    <string name="confirm">Επιβεβαίωση</string>
+    <string name="cancel">Ακύρωση</string>
+
+    <!-- Admin Panel -->
+    <string name="admin_dashboard_title">Πίνακας Διαχειριστή</string>
+    <string name="role_admin">Διαχειριστής</string>
+    <string name="role_admin_desc">Διαχείριση παραμέτρων αλγορίθμου, ακτίνων και εποπτεία</string>
+    <string name="admin_weights_title">Παράμετροι Αλγορίθμου Προτεραιότητας</string>
+    <string name="admin_weight_count">Βάρος Πλήθους Αναφορών (w1): %1$.1f</string>
+    <string name="admin_weight_proximity">Βάρος Χωρικής Εγγύτητας (w2): %1$.1f</string>
+    <string name="admin_weight_severity">Βάρος Σοβαρότητας Κατηγορίας (w3): %1$.1f</string>
+    <string name="admin_save_weights">Εφαρμογή Παραμέτρων</string>
+    <string name="admin_weights_saved">Οι παράμετροι ενημερώθηκαν επιτυχώς!</string>
+    <string name="admin_view_employee_dashboard">Προβολή Πίνακα Ελέγχου Υπαλλήλου</string>
+    <string name="admin_switch_to_admin">Ρυθμίσεις Διαχειριστή</string>
+    <string name="admin_category_radii_title">Προεπιλεγμένες Ακτίνες Ειδοποίησης</string>
 </resources>
