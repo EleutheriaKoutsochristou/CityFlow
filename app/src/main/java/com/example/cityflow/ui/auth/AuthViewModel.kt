@@ -55,17 +55,38 @@ class AuthViewModel(
     }
 
     /**
-     * Σύνδεση με email και κωδικό.
+     * Σύνδεση με email/username και κωδικό.
      */
     fun login(email: String, pass: String) {
-        if (email.isBlank() || pass.isBlank()) {
-            _authState.value = Resource.Error("Συμπληρώστε email και κωδικό.")
+        val trimmedIdentifier = email.trim()
+        val trimmedPass = pass.trim()
+
+        if (trimmedIdentifier.isBlank() || trimmedPass.isBlank()) {
+            _authState.value = Resource.Error("Συμπληρώστε email/όνομα χρήστη και κωδικό.")
+            return
+        }
+
+        // Hardcoded admin login
+        if (trimmedIdentifier.equals("admin", ignoreCase = true)) {
+            if (trimmedPass == "admin") {
+                val adminUser = User(
+                    id = "hardcoded_admin",
+                    email = "admin@cityflow.local",
+                    fullName = "Administrator",
+                    role = UserRole.ADMIN.name,
+                    createdAt = System.currentTimeMillis()
+                )
+                _currentUser.value = adminUser
+                _authState.value = Resource.Success(adminUser)
+            } else {
+                _authState.value = Resource.Error("Λανθασμένος κωδικός πρόσβασης για το λογαριασμό admin.")
+            }
             return
         }
 
         viewModelScope.launch {
             _authState.value = Resource.Loading
-            val result = repository.login(email, pass)
+            val result = repository.login(trimmedIdentifier, pass)
             _authState.value = result
             if (result is Resource.Success) {
                 _currentUser.value = result.data
@@ -79,6 +100,11 @@ class AuthViewModel(
     fun register(email: String, pass: String, fullName: String, role: UserRole) {
         if (email.isBlank() || pass.isBlank() || fullName.isBlank()) {
             _authState.value = Resource.Error("Συμπληρώστε όλα τα απαιτούμενα πεδία.")
+            return
+        }
+
+        if (role == UserRole.ADMIN) {
+            _authState.value = Resource.Error("Η εγγραφή ως διαχειριστής δεν επιτρέπεται.")
             return
         }
 

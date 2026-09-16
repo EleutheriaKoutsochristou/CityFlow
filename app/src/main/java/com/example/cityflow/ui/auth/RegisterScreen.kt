@@ -163,13 +163,6 @@ fun RegisterScreen(
                         onClick = { selectedRole = UserRole.EMPLOYEE }
                     )
 
-                    RoleSelectionCard(
-                        title = stringResource(R.string.role_admin),
-                        description = stringResource(R.string.role_admin_desc),
-                        isSelected = selectedRole == UserRole.ADMIN,
-                        onClick = { selectedRole = UserRole.ADMIN }
-                    )
-
                     if (authState is Resource.Error) {
                         Text(
                             text = (authState as Resource.Error).message,
@@ -236,7 +229,7 @@ fun RoleSelectionCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertizontally
+            verticalAlignment = Alignment.CenterVertically
         ) {
             RadioButton(
                 selected = isSelected,

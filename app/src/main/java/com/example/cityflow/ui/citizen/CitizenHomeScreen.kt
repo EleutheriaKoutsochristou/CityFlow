@@ -79,7 +79,7 @@ fun CitizenHomeScreen(
             ) {
                 Row(
                     modifier = Modifier.padding(20.dp),
-                    verticalAlignment = Alignment.CenterVertizontally
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         Icons.Default.Campaign,
@@ -110,7 +110,7 @@ fun CitizenHomeScreen(
             ) {
                 Row(
                     modifier = Modifier.padding(20.dp),
-                    verticalAlignment = Alignment.CenterVertizontally
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         Icons.Default.BarChart,

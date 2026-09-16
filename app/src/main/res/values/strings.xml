@@ -6,6 +6,7 @@
     <string name="login">Σύνδεση</string>
     <string name="register">Εγγραφή</string>
     <string name="email">Email</string>
+    <string name="email_or_username">Email ή Όνομα χρήστη</string>
     <string name="password">Κωδικός πρόσβασης</string>
     <string name="full_name">Ονοματεπώνυμο</string>
     <string name="select_role">Επιλέξτε Ρόλο</string>

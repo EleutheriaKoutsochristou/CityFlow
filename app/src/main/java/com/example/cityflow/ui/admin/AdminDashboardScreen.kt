@@ -40,7 +40,7 @@ fun AdminDashboardScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Row(verticalAlignment = Alignment.CenterVertizontally) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.AdminPanelSettings, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(stringResource(R.string.admin_dashboard_title), fontWeight = FontWeight.Bold)
@@ -109,7 +109,7 @@ fun AdminDashboardScreen(
                 ) {
                     Row(
                         modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertizontally
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             Icons.Default.Dashboard,
@@ -224,7 +224,7 @@ fun AdminDashboardScreen(
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertizontally
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 text = category.titleEl,

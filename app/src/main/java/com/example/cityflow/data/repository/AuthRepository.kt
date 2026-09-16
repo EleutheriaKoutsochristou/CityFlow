@@ -27,11 +27,30 @@ class AuthRepository(
         get() = auth.currentUser != null
 
     /**
-     * Σύνδεση χρήστη με Email & Password.
+     * Σύνδεση χρήστη με Email & Password (ή hardcoded admin).
      */
     suspend fun login(email: String, password: String): Resource<User> {
+        val trimmedIdentifier = email.trim()
+        val trimmedPassword = password.trim()
+
+        if (trimmedIdentifier.equals("admin", ignoreCase = true)) {
+            return if (trimmedPassword == "admin") {
+                Resource.Success(
+                    User(
+                        id = "hardcoded_admin",
+                        email = "admin@cityflow.local",
+                        fullName = "Administrator",
+                        role = UserRole.ADMIN.name,
+                        createdAt = System.currentTimeMillis()
+                    )
+                )
+            } else {
+                Resource.Error("Λανθασμένος κωδικός πρόσβασης για το λογαριασμό admin.")
+            }
+        }
+
         return try {
-            val authResult = auth.signInWithEmailAndPassword(email.trim(), password).await()
+            val authResult = auth.signInWithEmailAndPassword(trimmedIdentifier, password).await()
             val firebaseUser = authResult.user
                 ?: return Resource.Error("Αποτυχία ταυτοποίησης: Δεν βρέθηκε χρήστης.")
 
@@ -62,6 +81,10 @@ class AuthRepository(
         fullName: String,
         role: UserRole
     ): Resource<User> {
+        if (role == UserRole.ADMIN) {
+            return Resource.Error("Η εγγραφή ως διαχειριστής δεν επιτρέπεται.")
+        }
+
         return try {
             val authResult = auth.createUserWithEmailAndPassword(email.trim(), password).await()
             val firebaseUser = authResult.user
