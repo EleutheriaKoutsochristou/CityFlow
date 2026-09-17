@@ -33,7 +33,10 @@ class AuthRepository(
         val trimmedIdentifier = email.trim()
         val trimmedPassword = password.trim()
 
-        if (trimmedIdentifier.equals("admin", ignoreCase = true)) {
+        if (trimmedIdentifier.equals("admin", ignoreCase = true) ||
+            trimmedIdentifier.equals("admin@cityflow.com", ignoreCase = true) ||
+            trimmedIdentifier.equals("admin@cityflow.local", ignoreCase = true)
+        ) {
             return if (trimmedPassword == "admin") {
                 Resource.Success(
                     User(

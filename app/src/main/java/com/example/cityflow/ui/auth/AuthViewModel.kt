@@ -103,11 +103,6 @@ class AuthViewModel(
             return
         }
 
-        if (role == UserRole.ADMIN) {
-            _authState.value = Resource.Error("Η εγγραφή ως διαχειριστής δεν επιτρέπεται.")
-            return
-        }
-
         if (pass.length < 6) {
             _authState.value = Resource.Error("Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες.")
             return
