@@ -62,7 +62,11 @@ object PriorityCalculator {
         allReports: List<Report>
     ): Double {
         val similarReports = findSimilarReports(target, allReports)
-        val count = similarReports.size + 1 // Συμπεριλαμβάνουμε και την ίδια την αναφορά
+        // Μέτρηση μοναδικών χρηστών (unique users) για την αξιοπιστία του cluster
+        val uniqueUserIds = (similarReports.map { it.userId } + target.userId)
+            .filter { it.isNotBlank() }
+            .distinct()
+        val count = if (uniqueUserIds.isNotEmpty()) uniqueUserIds.size else (similarReports.size + 1)
 
         // Υπολογισμός μέσης απόστασης των παρόμοιων αναφορών
         val avgDistance = if (similarReports.isEmpty()) {

@@ -46,6 +46,23 @@ class ReportRepository(
 
             val existingReports = recentSnapshots.toObjects(Report::class.java)
 
+            // Έλεγχος αποφυγής διπλότυπης αναφοράς από τον ίδιο χρήστη (Option B)
+            val hasDuplicateFromSameUser = existingReports.any { existing ->
+                existing.userId.isNotBlank() &&
+                existing.userId == report.userId &&
+                Math.abs(report.timestamp - existing.timestamp) <= PriorityCalculator.DEFAULT_TIME_WINDOW_MS &&
+                DistanceCalculator.distanceBetweenMeters(
+                    report.latitude,
+                    report.longitude,
+                    existing.latitude,
+                    existing.longitude
+                ) <= PriorityCalculator.CLUSTER_RADIUS_METERS
+            }
+
+            if (hasDuplicateFromSameUser) {
+                return Resource.Error("Έχετε ήδη υποβάλει αναφορά για αυτό το σημείο τα τελευταία 30 λεπτά. Παρακαλώ περιμένετε την επεξεργασία της.")
+            }
+
             // Εύρεση παρόμοιων αναφορών και υπολογισμός σκορ
             val similarReports = PriorityCalculator.findSimilarReports(report, existingReports)
             val calculatedScore = PriorityCalculator.calculateScore(report, existingReports)
