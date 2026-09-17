@@ -19,11 +19,11 @@ object PriorityCalculator {
     var weightProximity: Double = 1.5
     var weightSeverity: Double = 1.0
 
-    // Χρονικό παράθυρο παρόμοιων αναφορών (60 λεπτά σε milliseconds)
-    const val DEFAULT_TIME_WINDOW_MS: Long = 60 * 60 * 1000L
+    // Χρονικό παράθυρο παρόμοιων αναφορών (30 λεπτά σε milliseconds σύμφωνα με την εκφώνηση)
+    const val DEFAULT_TIME_WINDOW_MS: Long = 30 * 60 * 1000L
 
-    // Μέγιστη απόσταση για να θεωρηθούν δύο αναφορές ως το ίδιο συμβάν (100 μέτρα)
-    const val CLUSTER_RADIUS_METERS: Double = 100.0
+    // Μέγιστη απόσταση για να θεωρηθούν δύο αναφορές ως το ίδιο συμβάν (50 μέτρα σύμφωνα με την εκφώνηση)
+    const val CLUSTER_RADIUS_METERS: Double = 50.0
 
     enum class PriorityLevel(val titleEl: String, val titleEn: String) {
         LOW("Χαμηλή", "Low"),

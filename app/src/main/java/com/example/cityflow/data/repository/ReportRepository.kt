@@ -56,7 +56,29 @@ class ReportRepository(
                 similarReportsCount = similarReports.size + 1
             )
 
-            docRef.set(finalReport).await()
+            // Ατομική αποθήκευση της νέας αναφοράς και ενημέρωση των παλαιότερων
+            // παρόμοιων αναφορών του ίδιου cluster (πλήθος και PriorityScore)
+            val batch = firestore.batch()
+            batch.set(docRef, finalReport)
+
+            val allReportsWithNew = existingReports.filter { it.id != docId } + finalReport
+            val clusterCount = similarReports.size + 1
+
+            for (simReport in similarReports) {
+                if (simReport.id.isNotBlank()) {
+                    val simDocRef = reportsCollection.document(simReport.id)
+                    val updatedScore = PriorityCalculator.calculateScore(simReport, allReportsWithNew)
+                    batch.update(
+                        simDocRef,
+                        mapOf(
+                            "similarReportsCount" to clusterCount,
+                            "priorityScore" to updatedScore
+                        )
+                    )
+                }
+            }
+
+            batch.commit().await()
             Resource.Success(docId)
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Αποτυχία υποβολής αναφοράς.", e)
