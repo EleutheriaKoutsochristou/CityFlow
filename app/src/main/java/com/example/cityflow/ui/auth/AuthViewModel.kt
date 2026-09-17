@@ -62,7 +62,7 @@ class AuthViewModel(
         val trimmedPass = pass.trim()
 
         if (trimmedIdentifier.isBlank() || trimmedPass.isBlank()) {
-            _authState.value = Resource.Error("Συμπληρώστε email/όνομα χρήστη και κωδικό.")
+            _authState.value = Resource.Error("Συμπληρώστε email χρήστη και κωδικό.")
             return
         }
 
