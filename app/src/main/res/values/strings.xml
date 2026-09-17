@@ -43,7 +43,11 @@
     <string name="location_permission_needed">Απαιτείται άδεια τοποθεσίας για αυτόματο στίγμα.</string>
     <string name="photo_section">Φωτογραφία (Προαιρετικά)</string>
     <string name="take_photo">Λήψη Φωτογραφίας</string>
+    <string name="choose_gallery">Επιλογή από Συλλογή</string>
     <string name="remove_photo">Αφαίρεση</string>
+    <string name="location_not_available">Δεν ήταν δυνατή η λήψη GPS. Βεβαιωθείτε ότι η τοποθεσία είναι ενεργοποιημένη.</string>
+    <string name="severity_level">Σοβαρότητα: %1$d/5</string>
+    <string name="radius_meters">Ακτίνα: %1$.0fm</string>
     <string name="btn_submit_report">Υποβολή Αναφοράς</string>
     <string name="report_submitting">Αποστολή αναφοράς…</string>
     <string name="report_submit_success">Η αναφορά υποβλήθηκε επιτυχώς!</string>

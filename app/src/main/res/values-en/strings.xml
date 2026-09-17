@@ -42,8 +42,12 @@
     <string name="location_retry">Refresh Location</string>
     <string name="location_permission_needed">Location permission required for automatic GPS tag.</string>
     <string name="photo_section">Photo (Optional)</string>
-    <string name="take_photo">Take / Select Photo</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="choose_gallery">Choose from Gallery</string>
     <string name="remove_photo">Remove</string>
+    <string name="location_not_available">Could not acquire GPS fix. Please ensure location services are enabled.</string>
+    <string name="severity_level">Severity: %1$d/5</string>
+    <string name="radius_meters">Radius: %1$.0fm</string>
     <string name="btn_submit_report">Submit Report</string>
     <string name="report_submitting">Submitting report…</string>
     <string name="report_submit_success">Report submitted successfully!</string>

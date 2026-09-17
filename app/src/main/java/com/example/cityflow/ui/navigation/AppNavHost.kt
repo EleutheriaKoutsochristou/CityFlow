@@ -15,6 +15,7 @@ import com.example.cityflow.ui.auth.AuthViewModel
 import com.example.cityflow.ui.auth.LoginScreen
 import com.example.cityflow.ui.auth.RegisterScreen
 import com.example.cityflow.ui.citizen.CitizenHomeScreen
+import com.example.cityflow.ui.citizen.SubmitReportScreen
 import com.example.cityflow.ui.employee.EmployeeDashboardScreen
 
 @Composable
@@ -88,6 +89,18 @@ fun AppNavHost(
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
+                }
+            )
+        }
+
+        composable(Screen.SubmitReport.route) {
+            SubmitReportScreen(
+                currentUser = currentUser,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onSubmitSuccess = {
+                    navController.popBackStack()
                 }
             )
         }
