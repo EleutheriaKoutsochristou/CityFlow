@@ -64,6 +64,13 @@
     <string name="status_label">Status: %1$s</string>
     <string name="advice_label">Practical Advice</string>
     <string name="action_success">Status updated successfully.</string>
+    <string name="filter_all">All</string>
+    <string name="filter_pending">Pending</string>
+    <string name="filter_active">Active</string>
+    <string name="filter_resolved">Resolved</string>
+    <string name="sort_priority">Priority</string>
+    <string name="sort_date">Newest</string>
+    <string name="no_reports_found">No reports available.</string>
 
     <!-- Alerts & Feed -->
     <string name="nearby_alerts_title">Nearby Mobility Alerts</string>

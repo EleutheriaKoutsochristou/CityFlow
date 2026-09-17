@@ -1,31 +1,101 @@
 package com.example.cityflow.ui.employee
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.cityflow.R
+import com.example.cityflow.data.model.Report
+import com.example.cityflow.data.model.ReportStatus
+import com.example.cityflow.data.model.Resource
 import com.example.cityflow.data.model.User
+import com.example.cityflow.domain.PriorityCalculator
+import com.example.cityflow.util.ImageUtils
+import java.text.SimpleDateFormat
+import java.util.*
 
-import androidx.compose.material.icons.filled.AdminPanelSettings
-
+/**
+ * Πίνακας Ελέγχου Υπαλλήλου (Employee Flow).
+ * Περιλαμβάνει:
+ * - Real-time λίστα όλων των αναφορών
+ * - Φίλτρα ανά κατάσταση (Όλες, Προς Έλεγχο, Ενεργές, Επιλυμένες) & Ταξινόμηση
+ * - Badges προτεραιότητας («Κρίσιμη», «Υψηλή», «Μέτρια», «Χαμηλή») με σκορ
+ * - Κουμπιά επικύρωσης (Verify), αλλαγής κατάστασης (In Progress, Resolved) και απόρριψης (Reject)
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EmployeeDashboardScreen(
     currentUser: User?,
     onNavigateToAdmin: (() -> Unit)? = null,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    viewModel: EmployeeDashboardViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val reports by viewModel.displayedReports.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val selectedFilter by viewModel.selectedFilter.collectAsState()
+    val selectedSort by viewModel.selectedSort.collectAsState()
+    val actionState by viewModel.actionState.collectAsState()
+
+    // Dialog state για προαιρετική επεξεργασία οδηγίας κατά την επικύρωση
+    var reportToVerify by remember { mutableStateOf<Report?>(null) }
+    var verifyAdviceText by remember { mutableStateOf("") }
+
+    val employeeIdentifier = currentUser?.fullName?.ifBlank { currentUser.email }
+        ?: currentUser?.email.orEmpty().ifBlank { "Υπάλληλος" }
+
+    // Εμφάνιση μηνυμάτων ενεργειών σε Snackbar
+    LaunchedEffect(actionState) {
+        when (val state = actionState) {
+            is Resource.Success -> {
+                snackbarHostState.showSnackbar(
+                    message = state.data,
+                    duration = SnackbarDuration.Short
+                )
+                viewModel.clearActionState()
+            }
+            is Resource.Error -> {
+                snackbarHostState.showSnackbar(
+                    message = state.message,
+                    duration = SnackbarDuration.Long
+                )
+                viewModel.clearActionState()
+            }
+            else -> Unit
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.employee_dashboard_title), fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        stringResource(R.string.employee_dashboard_title),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 actions = {
                     if (currentUser?.isAdmin == true && onNavigateToAdmin != null) {
                         IconButton(onClick = onNavigateToAdmin) {
@@ -49,39 +119,596 @@ fun EmployeeDashboardScreen(
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // 1. Header με καλωσόρισμα & ρόλο
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f))
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.35f)
+                ),
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Καλώς ήρθατε, $employeeIdentifier!",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Ρόλος: ${stringResource(R.string.role_employee)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Badge(containerColor = MaterialTheme.colorScheme.primary) {
+                        Text(
+                            text = "${reports.size} αναφορές",
+                            modifier = Modifier.padding(4.dp),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
+            }
+
+            // 2. Φίλτρα κατάστασης & Ταξινόμηση
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FilterChip(
+                    selected = selectedFilter == EmployeeReportFilter.ALL,
+                    onClick = { viewModel.setFilter(EmployeeReportFilter.ALL) },
+                    label = { Text(stringResource(R.string.filter_all)) }
+                )
+                FilterChip(
+                    selected = selectedFilter == EmployeeReportFilter.PENDING,
+                    onClick = { viewModel.setFilter(EmployeeReportFilter.PENDING) },
+                    label = { Text(stringResource(R.string.filter_pending)) }
+                )
+                FilterChip(
+                    selected = selectedFilter == EmployeeReportFilter.ACTIVE,
+                    onClick = { viewModel.setFilter(EmployeeReportFilter.ACTIVE) },
+                    label = { Text(stringResource(R.string.filter_active)) }
+                )
+                FilterChip(
+                    selected = selectedFilter == EmployeeReportFilter.RESOLVED,
+                    onClick = { viewModel.setFilter(EmployeeReportFilter.RESOLVED) },
+                    label = { Text(stringResource(R.string.filter_resolved)) }
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Sort toggle
+                AssistChip(
+                    onClick = {
+                        val nextSort = if (selectedSort == EmployeeReportSort.PRIORITY_DESC) {
+                            EmployeeReportSort.DATE_DESC
+                        } else {
+                            EmployeeReportSort.PRIORITY_DESC
+                        }
+                        viewModel.setSort(nextSort)
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = if (selectedSort == EmployeeReportSort.PRIORITY_DESC) Icons.Default.Sort else Icons.Default.Schedule,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    },
+                    label = {
+                        Text(
+                            if (selectedSort == EmployeeReportSort.PRIORITY_DESC)
+                                stringResource(R.string.sort_priority)
+                            else
+                                stringResource(R.string.sort_date)
+                        )
+                    }
+                )
+            }
+
+            Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+            // 3. Λίστα αναφορών σε πραγματικό χρόνο
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else if (reports.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            Icons.Default.Inbox,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(R.string.no_reports_found),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(reports, key = { it.id }) { report ->
+                        ReportEmployeeCard(
+                            report = report,
+                            onVerify = {
+                                reportToVerify = report
+                                verifyAdviceText = report.practicalAdvice.ifBlank {
+                                    report.reportCategory.defaultAdviceEl
+                                }
+                            },
+                            onSetInProgress = {
+                                viewModel.updateStatus(
+                                    reportId = report.id,
+                                    newStatus = ReportStatus.IN_PROGRESS,
+                                    verifiedBy = employeeIdentifier
+                                )
+                            },
+                            onResolve = {
+                                viewModel.updateStatus(
+                                    reportId = report.id,
+                                    newStatus = ReportStatus.RESOLVED,
+                                    verifiedBy = employeeIdentifier
+                                )
+                            },
+                            onReject = {
+                                viewModel.updateStatus(
+                                    reportId = report.id,
+                                    newStatus = ReportStatus.REJECTED,
+                                    verifiedBy = employeeIdentifier
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    // Διάλογος επιβεβαίωσης & οδηγίας επικύρωσης
+    if (reportToVerify != null) {
+        val target = reportToVerify!!
+        AlertDialog(
+            onDismissRequest = { reportToVerify = null },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Επικύρωση Αναφοράς", fontWeight = FontWeight.Bold)
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
-                        text = "Καλώς ήρθατε, ${currentUser?.fullName ?: "Υπάλληλε"}!",
-                        style = MaterialTheme.typography.titleLarge,
+                        text = "Επικύρωση του συμβάντος: \"${target.reportCategory.titleEl}\"",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Ορίστε ή προσαρμόστε την πρακτική οδηγία που θα βλέπουν οι πολίτες στις ειδοποιήσεις:",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = verifyAdviceText,
+                        onValueChange = { verifyAdviceText = it },
+                        label = { Text("Πρακτική Οδηγία") },
+                        minLines = 2,
+                        maxLines = 4,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.updateStatus(
+                            reportId = target.id,
+                            newStatus = ReportStatus.VERIFIED,
+                            verifiedBy = employeeIdentifier,
+                            practicalAdvice = verifyAdviceText.trim()
+                        )
+                        reportToVerify = null
+                    }
+                ) {
+                    Text("Επικύρωση")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { reportToVerify = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+}
+
+/**
+ * Κάρτα Αναφοράς για τον Υπάλληλο με Badges, Πληροφορίες & Κουμπιά Ενεργειών.
+ */
+@Composable
+fun ReportEmployeeCard(
+    report: Report,
+    onVerify: () -> Unit,
+    onSetInProgress: () -> Unit,
+    onResolve: () -> Unit,
+    onReject: () -> Unit
+) {
+    val priorityLevel = PriorityCalculator.getPriorityLevel(report.priorityScore)
+    val status = report.reportStatus
+
+    // Μορφοποίηση ημερομηνίας
+    val dateFormatted = remember(report.timestamp) {
+        val sdf = SimpleDateFormat("dd/MM/yyyy • HH:mm", Locale.getDefault())
+        sdf.format(Date(report.timestamp))
+    }
+
+    // Αποκωδικοποίηση φωτογραφίας εάν υπάρχει
+    val photoBitmap = remember(report.imageBase64) {
+        if (!report.imageBase64.isNullOrBlank()) {
+            ImageUtils.base64ToBitmap(report.imageBase64)
+        } else null
+    }
+
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Header: Τίτλος Κατηγορίας & Priority Badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = report.reportCategory.titleEl,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Ρόλος: ${stringResource(R.string.role_employee)}",
-                        style = MaterialTheme.typography.bodyMedium,
+                        text = dateFormatted,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Priority Badge («Κρίσιμη», «Υψηλή» κ.λπ.)
+                PriorityBadge(priorityLevel = priorityLevel, score = report.priorityScore)
+            }
+
+            // Υπότιτλος: Status Badge & Ένδειξη Cluster
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                StatusBadge(status = status)
+
+                if (report.similarReportsCount > 1) {
+                    SuggestionChip(
+                        onClick = {},
+                        label = {
+                            Text(
+                                stringResource(R.string.similar_reports_count, report.similarReportsCount),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        },
+                        icon = {
+                            Icon(
+                                Icons.Default.Groups,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     )
                 }
             }
 
+            // Τοποθεσία
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Default.LocationOn,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = report.address.ifBlank {
+                        String.format(Locale.US, "GPS: %.5f, %.5f", report.latitude, report.longitude)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            // Περιγραφή χρήστη
+            if (report.description.isNotBlank()) {
+                Text(
+                    text = report.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                            RoundedCornerShape(8.dp)
+                        )
+                        .padding(10.dp)
+                )
+            }
+
+            // Φωτογραφία αναφοράς
+            if (photoBitmap != null) {
+                Image(
+                    bitmap = photoBitmap.asImageBitmap(),
+                    contentDescription = "Report Attachment",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(RoundedCornerShape(10.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            // Πρακτική Οδηγία
+            if (report.practicalAdvice.isNotBlank()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f),
+                            RoundedCornerShape(8.dp)
+                        )
+                        .padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Οδηγία: ${report.practicalAdvice}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+
+            Divider()
+
+            // Κουμπιά Ενεργειών (Employee Actions)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                when (status) {
+                    ReportStatus.SUBMITTED -> {
+                        OutlinedButton(
+                            onClick = onReject,
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(R.string.btn_reject))
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Button(
+                            onClick = onVerify,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(R.string.btn_verify))
+                        }
+                    }
+
+                    ReportStatus.VERIFIED -> {
+                        OutlinedButton(
+                            onClick = onReject,
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text(stringResource(R.string.btn_reject))
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Button(
+                            onClick = onSetInProgress,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFF57C00) // Orange
+                            )
+                        ) {
+                            Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(R.string.btn_in_progress))
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Button(
+                            onClick = onResolve,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF2E7D32) // Dark Green
+                            )
+                        ) {
+                            Icon(Icons.Default.DoneAll, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(R.string.btn_resolve))
+                        }
+                    }
+
+                    ReportStatus.IN_PROGRESS -> {
+                        Button(
+                            onClick = onResolve,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF2E7D32) // Dark Green
+                            )
+                        ) {
+                            Icon(Icons.Default.DoneAll, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(R.string.btn_resolve))
+                        }
+                    }
+
+                    ReportStatus.RESOLVED -> {
+                        AssistChip(
+                            onClick = {},
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint = Color(0xFF2E7D32),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            },
+                            label = { Text("Ολοκληρώθηκε") }
+                        )
+                    }
+
+                    ReportStatus.REJECTED -> {
+                        AssistChip(
+                            onClick = {},
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Default.Cancel,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            },
+                            label = { Text("Απορρίφθηκε") }
+                        )
+                    }
+
+                    else -> Unit
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Priority Badge με χρωματική κωδικοποίηση.
+ */
+@Composable
+fun PriorityBadge(
+    priorityLevel: PriorityCalculator.PriorityLevel,
+    score: Double
+) {
+    val (backgroundColor, textColor) = when (priorityLevel) {
+        PriorityCalculator.PriorityLevel.CRITICAL -> Color(0xFFFFCDD2) to Color(0xFFB71C1C) // Red
+        PriorityCalculator.PriorityLevel.HIGH -> Color(0xFFFFE0B2) to Color(0xFFE65100)     // Orange
+        PriorityCalculator.PriorityLevel.MEDIUM -> Color(0xFFFFF9C4) to Color(0xFFF57F17)   // Amber/Yellow
+        PriorityCalculator.PriorityLevel.LOW -> Color(0xFFE1F5FE) to Color(0xFF0277BD)      // Light Blue
+    }
+
+    Surface(
+        color = backgroundColor,
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
-                text = "Πίνακας ελέγχου και αξιολόγησης αναφορών",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = "${priorityLevel.titleEl} (${String.format(Locale.US, "%.1f", score)})",
+                color = textColor,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold
             )
         }
+    }
+}
+
+/**
+ * Status Badge με χρωματική κωδικοποίηση.
+ */
+@Composable
+fun StatusBadge(status: ReportStatus) {
+    val (bgColor, txtColor) = when (status) {
+        ReportStatus.SUBMITTED -> Color(0xFFFFF3E0) to Color(0xFFE65100)
+        ReportStatus.VERIFIED -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+        ReportStatus.IN_PROGRESS -> Color(0xFFEDE7F6) to Color(0xFF512DA8)
+        ReportStatus.RESOLVED -> Color(0xFFE0F2F1) to Color(0xFF00695C)
+        ReportStatus.REJECTED -> Color(0xFFFFEBEE) to Color(0xFFC62828)
+        ReportStatus.UNDER_REVIEW -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
+    }
+
+    Surface(
+        color = bgColor,
+        shape = RoundedCornerShape(6.dp)
+    ) {
+        Text(
+            text = status.titleEl,
+            color = txtColor,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+        )
     }
 }

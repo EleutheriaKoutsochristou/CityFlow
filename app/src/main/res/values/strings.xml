@@ -64,6 +64,13 @@
     <string name="status_label">Κατάσταση: %1$s</string>
     <string name="advice_label">Πρακτική Οδηγία</string>
     <string name="action_success">Η κατάσταση ενημερώθηκε επιτυχώς.</string>
+    <string name="filter_all">Όλες</string>
+    <string name="filter_pending">Προς Έλεγχο</string>
+    <string name="filter_active">Ενεργές</string>
+    <string name="filter_resolved">Επιλυμένες</string>
+    <string name="sort_priority">Προτεραιότητα</string>
+    <string name="sort_date">Νεότερες</string>
+    <string name="no_reports_found">Δεν υπάρχουν διαθέσιμες αναφορές.</string>
 
     <!-- Alerts & Feed -->
     <string name="nearby_alerts_title">Κοντινά Προβλήματα Κινητικότητας</string>
