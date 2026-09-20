@@ -17,6 +17,7 @@ import com.example.cityflow.ui.auth.RegisterScreen
 import com.example.cityflow.ui.citizen.CitizenHomeScreen
 import com.example.cityflow.ui.citizen.SubmitReportScreen
 import com.example.cityflow.ui.employee.EmployeeDashboardScreen
+import com.example.cityflow.ui.stats.StatsScreen
 
 @Composable
 fun AppNavHost(
@@ -111,6 +112,9 @@ fun AppNavHost(
                 onNavigateToAdmin = {
                     navController.navigate(Screen.AdminDashboard.route)
                 },
+                onNavigateToStats = {
+                    navController.navigate(Screen.Stats.route)
+                },
                 onLogout = {
                     authViewModel.logout()
                     navController.navigate(Screen.Login.route) {
@@ -126,11 +130,23 @@ fun AppNavHost(
                 onNavigateToEmployeeDashboard = {
                     navController.navigate(Screen.EmployeeDashboard.route)
                 },
+                onNavigateToStats = {
+                    navController.navigate(Screen.Stats.route)
+                },
                 onLogout = {
                     authViewModel.logout()
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
+                }
+            )
+        }
+
+        composable(Screen.Stats.route) {
+            StatsScreen(
+                currentUser = currentUser,
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }

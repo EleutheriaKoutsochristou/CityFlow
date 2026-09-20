@@ -85,6 +85,22 @@
     <string name="resolved_reports_count">Επιλυμένες</string>
     <string name="nearby_alerts_received">Κοντινές Ειδοποιήσεις</string>
     <string name="category_breakdown">Κατανομή ανά Κατηγορία</string>
+    <string name="stats_tab_my_history">Το Ιστορικό μου</string>
+    <string name="stats_tab_overview">Επισκόπηση Πόλης</string>
+    <string name="stats_my_summary">Προσωπική Δραστηριότητα</string>
+    <string name="stats_city_summary">Συνολικά Δεδομένα Πόλης</string>
+    <string name="stats_resolution_rate">Ποσοστό Επίλυσης: %1$d%%</string>
+    <string name="stats_filter_all_time">Όλες</string>
+    <string name="stats_filter_7_days">7 ημέρες</string>
+    <string name="stats_filter_30_days">30 ημέρες</string>
+    <string name="stats_no_reports_yet">Δεν έχετε υποβάλει αναφορές ακόμα.</string>
+    <string name="stats_no_filtered_reports">Δεν βρέθηκαν αναφορές με τα επιλεγμένα φίλτρα.</string>
+    <string name="stats_view_stats">Στατιστικά &amp; Ιστορικό</string>
+    <string name="stats_employee_summary">Επιχειρησιακή Εικόνα Διαχείρισης</string>
+    <string name="stats_pending_review">Προς Έλεγχο</string>
+    <string name="stats_in_progress">Σε Εξέλιξη</string>
+    <string name="stats_critical_incidents">Υψηλής / Κρίσιμης Προτεραιότητας</string>
+    <string name="stats_tab_all_history">Αναφορές Πόλης</string>
 
     <!-- Settings / Theme / Language -->
     <string name="theme_toggle">Σκοτεινή λειτουργία (Dark Mode)</string>

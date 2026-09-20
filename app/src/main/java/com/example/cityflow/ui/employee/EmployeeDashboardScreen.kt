@@ -47,6 +47,7 @@ import java.util.*
 fun EmployeeDashboardScreen(
     currentUser: User?,
     onNavigateToAdmin: (() -> Unit)? = null,
+    onNavigateToStats: (() -> Unit)? = null,
     onLogout: () -> Unit,
     viewModel: EmployeeDashboardViewModel = viewModel()
 ) {
@@ -97,6 +98,15 @@ fun EmployeeDashboardScreen(
                     )
                 },
                 actions = {
+                    if (onNavigateToStats != null) {
+                        IconButton(onClick = onNavigateToStats) {
+                            Icon(
+                                Icons.Default.BarChart,
+                                contentDescription = stringResource(R.string.stats_title),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    }
                     if (currentUser?.isAdmin == true && onNavigateToAdmin != null) {
                         IconButton(onClick = onNavigateToAdmin) {
                             Icon(

@@ -31,8 +31,28 @@ object NotificationHelper {
     private const val CHANNEL_NAME = "CityFlow Mobility Alerts"
     private const val CHANNEL_DESC = "Ειδοποιήσεις για προβλήματα προσβασιμότητας και κινητικότητας κοντά σας"
 
+    private const val PREFS_NAME = "cityflow_prefs"
+    private const val KEY_ALERT_COUNT = "received_alerts_count"
+
     // Καταγραφή των αναφορών για τις οποίες έχει ήδη σταλεί ειδοποίηση σε αυτή τη συνεδρία
     private val notifiedReportIds = ConcurrentHashMap.newKeySet<String>()
+
+    /**
+     * Ανάκτηση του συνολικού πλήθους ειδοποιήσεων που έχουν ληφθεί στη συσκευή.
+     */
+    fun getReceivedAlertsCount(context: Context): Int {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getInt(KEY_ALERT_COUNT, 0)
+    }
+
+    /**
+     * Αύξηση του μετρητή ληφθεισών ειδοποιήσεων.
+     */
+    fun incrementAlertCount(context: Context) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val current = prefs.getInt(KEY_ALERT_COUNT, 0)
+        prefs.edit().putInt(KEY_ALERT_COUNT, current + 1).apply()
+    }
 
     /**
      * Δημιουργία NotificationChannel (απαραίτητο για Android 8.0+ / API 26+).
@@ -61,6 +81,9 @@ object NotificationHelper {
         if (report.id.isNotBlank() && !notifiedReportIds.add(report.id)) {
             return
         }
+
+        // Καταγραφή της ληφθείσας ειδοποίησης για τα στατιστικά
+        incrementAlertCount(context)
 
         // Έλεγχος άδειας POST_NOTIFICATIONS για Android 13+ (API 33+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
@@ -28,6 +29,7 @@ import com.example.cityflow.domain.PriorityCalculator
 fun AdminDashboardScreen(
     currentUser: User?,
     onNavigateToEmployeeDashboard: () -> Unit,
+    onNavigateToStats: (() -> Unit)? = null,
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
@@ -47,6 +49,16 @@ fun AdminDashboardScreen(
                     }
                 },
                 actions = {
+                    // Quick jump to Stats
+                    if (onNavigateToStats != null) {
+                        IconButton(onClick = onNavigateToStats) {
+                            Icon(
+                                Icons.Default.BarChart,
+                                contentDescription = stringResource(R.string.stats_title),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    }
                     // Quick jump to Employee Dashboard
                     IconButton(onClick = onNavigateToEmployeeDashboard) {
                         Icon(
@@ -129,6 +141,42 @@ fun AdminDashboardScreen(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
+                        }
+                    }
+                }
+            }
+
+            // Button to View Stats & History
+            if (onNavigateToStats != null) {
+                item {
+                    ElevatedCard(
+                        onClick = onNavigateToStats,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.BarChart,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Column {
+                                Text(
+                                    text = stringResource(R.string.stats_title),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = "Προβολή δεικτών, κατανομής κατηγοριών και ποσοστού επίλυσης",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
