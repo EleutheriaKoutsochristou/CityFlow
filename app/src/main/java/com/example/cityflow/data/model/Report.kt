@@ -1,11 +1,15 @@
 package com.example.cityflow.data.model
 
+import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.IgnoreExtraProperties
+
 /**
  * Κεντρικό μοντέλο αναφοράς συμβάντος/προβλήματος.
  * Αποθηκεύεται στη συλλογή "reports" του Firestore.
  *
  * Όλα τα πεδία έχουν default values για απρόσκοπτο serialization/deserialization από το Firestore.
  */
+@IgnoreExtraProperties
 data class Report(
     val id: String = "",
     val userId: String = "",
@@ -25,12 +29,15 @@ data class Report(
     val similarReportsCount: Int = 1,
     val practicalAdvice: String = ""
 ) {
+    @get:Exclude
     val reportCategory: ReportCategory
         get() = ReportCategory.fromString(category)
 
+    @get:Exclude
     val reportStatus: ReportStatus
         get() = ReportStatus.fromString(status)
 
+    @get:Exclude
     val isVerified: Boolean
         get() = reportStatus == ReportStatus.VERIFIED ||
                 reportStatus == ReportStatus.IN_PROGRESS ||

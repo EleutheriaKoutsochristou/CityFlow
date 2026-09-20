@@ -44,7 +44,13 @@ class ReportRepository(
                 .get()
                 .await()
 
-            val existingReports = recentSnapshots.toObjects(Report::class.java)
+            val existingReports = recentSnapshots.documents.mapNotNull { doc ->
+                try {
+                    doc.toObject(Report::class.java)?.copy(id = doc.id)
+                } catch (e: Exception) {
+                    null
+                }
+            }
 
             // Έλεγχος αποφυγής διπλότυπης αναφοράς από τον ίδιο χρήστη (Option B)
             val hasDuplicateFromSameUser = existingReports.any { existing ->
@@ -111,11 +117,19 @@ class ReportRepository(
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
+                    android.util.Log.e("ReportRepository", "Error listening to all reports", error)
                     close(error)
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {
-                    val reports = snapshot.toObjects(Report::class.java)
+                    val reports = snapshot.documents.mapNotNull { doc ->
+                        try {
+                            doc.toObject(Report::class.java)?.copy(id = doc.id)
+                        } catch (e: Exception) {
+                            android.util.Log.e("ReportRepository", "Failed to deserialize report: ${doc.id}", e)
+                            null
+                        }
+                    }
                     trySend(reports)
                 }
             }
@@ -130,12 +144,18 @@ class ReportRepository(
             .whereEqualTo("userId", userId)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
+                    android.util.Log.e("ReportRepository", "Error listening to user reports for $userId", error)
                     close(error)
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {
-                    val reports = snapshot.toObjects(Report::class.java)
-                        .sortedByDescending { it.timestamp }
+                    val reports = snapshot.documents.mapNotNull { doc ->
+                        try {
+                            doc.toObject(Report::class.java)?.copy(id = doc.id)
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }.sortedByDescending { it.timestamp }
                     trySend(reports)
                 }
             }
