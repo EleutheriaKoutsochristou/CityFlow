@@ -132,10 +132,6 @@ class StatsViewModel(
         reports.count { it.priorityScore >= 18.0 }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
-    val userResolvedCount: StateFlow<Int> = userReports.map { reports ->
-        reports.count { it.status == ReportStatus.RESOLVED.name }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-
     /**
      * Συνολικά στατιστικά πόλης (City Overview Stats).
      */

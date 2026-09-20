@@ -15,6 +15,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -164,6 +166,7 @@ fun StatsScreen(
                     1 -> {
                         // TAB 1: Το Ιστορικό μου & Φίλτρα
                         MyReportsHistoryContent(
+                            isEmployee = isEmployeeOrAdmin,
                             reports = filteredReports,
                             timeFilter = timeFilter,
                             statusFilter = statusFilter,
@@ -178,9 +181,10 @@ fun StatsScreen(
     }
 
     // Full photo dialog
-    if (selectedPhotoForDialog != null) {
-        val bitmap = remember(selectedPhotoForDialog) {
-            ImageUtils.base64ToBitmap(selectedPhotoForDialog)
+    val photoToShow = selectedPhotoForDialog
+    if (photoToShow != null) {
+        val bitmap = remember(photoToShow) {
+            ImageUtils.base64ToBitmap(photoToShow)
         }
         Dialog(onDismissRequest = { selectedPhotoForDialog = null }) {
             Card(
@@ -540,6 +544,7 @@ private fun CategoryBreakdownRow(item: CategoryStatItem) {
  */
 @Composable
 private fun MyReportsHistoryContent(
+    isEmployee: Boolean,
     reports: List<Report>,
     timeFilter: StatsTimeFilter,
     statusFilter: StatsStatusFilter,
@@ -632,7 +637,10 @@ private fun MyReportsHistoryContent(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = stringResource(R.string.stats_no_filtered_reports),
+                        text = if (isEmployee)
+                            stringResource(R.string.stats_no_reports_city)
+                        else
+                            stringResource(R.string.stats_no_filtered_reports),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -720,9 +728,7 @@ private fun UserReportHistoryCard(
             }
 
             if (report.description.isNotBlank()) {
-                Text(
-                    text = report.description,
-                    style = MaterialTheme.typography.bodyMedium,
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
@@ -730,7 +736,19 @@ private fun UserReportHistoryCard(
                             RoundedCornerShape(8.dp)
                         )
                         .padding(8.dp)
-                )
+                ) {
+                    Text(
+                        text = "Σχόλια / Περιγραφή:",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = report.description,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
 
             if (photoBitmap != null && !report.imageBase64.isNullOrBlank()) {

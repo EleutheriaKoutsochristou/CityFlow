@@ -487,9 +487,7 @@ fun ReportEmployeeCard(
 
             // Περιγραφή χρήστη
             if (report.description.isNotBlank()) {
-                Text(
-                    text = report.description,
-                    style = MaterialTheme.typography.bodyMedium,
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
@@ -497,7 +495,19 @@ fun ReportEmployeeCard(
                             RoundedCornerShape(8.dp)
                         )
                         .padding(10.dp)
-                )
+                ) {
+                    Text(
+                        text = "Σχόλια / Περιγραφή:",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = report.description,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
 
             // Φωτογραφία αναφοράς

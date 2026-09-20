@@ -703,7 +703,7 @@ fun NearbyAlertCard(
             // Description
             if (report.description.isNotBlank()) {
                 Text(
-                    text = report.description,
+                    text = "Σχόλια: ${report.description}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )

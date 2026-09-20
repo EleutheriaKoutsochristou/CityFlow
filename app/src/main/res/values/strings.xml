@@ -95,6 +95,7 @@
     <string name="stats_filter_30_days">30 ημέρες</string>
     <string name="stats_no_reports_yet">Δεν έχετε υποβάλει αναφορές ακόμα.</string>
     <string name="stats_no_filtered_reports">Δεν βρέθηκαν αναφορές με τα επιλεγμένα φίλτρα.</string>
+    <string name="stats_no_reports_city">Δεν υπάρχουν διαθέσιμες αναφορές για την πόλη.</string>
     <string name="stats_view_stats">Στατιστικά &amp; Ιστορικό</string>
     <string name="stats_employee_summary">Επιχειρησιακή Εικόνα Διαχείρισης</string>
     <string name="stats_pending_review">Προς Έλεγχο</string>
