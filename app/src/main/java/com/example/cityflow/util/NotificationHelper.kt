@@ -1,0 +1,133 @@
+package com.example.cityflow.util
+
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import com.example.cityflow.MainActivity
+import com.example.cityflow.R
+import com.example.cityflow.data.model.Report
+import com.example.cityflow.domain.DistanceCalculator
+import java.util.concurrent.ConcurrentHashMap
+
+/**
+ * Βοηθητική κλάση διαχείρισης τοπικών ειδοποιήσεων Android (Nearby Incident Alerts).
+ *
+ * Υλοποιεί τις προδιαγραφές 4 & 5:
+ * - Ειδοποιεί τον πολίτη όταν επικυρωμένο πρόβλημα βρίσκεται εντός της ακτίνας του.
+ * - Περιλαμβάνει κατηγορία, απόσταση, πρακτική οδηγία («Αποφύγετε το σημείο» κ.λπ.)
+ * - Αποτρέπει επαναλαμβανόμενες ενοχλήσεις για το ίδιο συμβάν μέσω tracking των IDs.
+ */
+object NotificationHelper {
+
+    const val CHANNEL_ID = "cityflow_alerts_channel"
+    private const val CHANNEL_NAME = "CityFlow Mobility Alerts"
+    private const val CHANNEL_DESC = "Ειδοποιήσεις για προβλήματα προσβασιμότητας και κινητικότητας κοντά σας"
+
+    // Καταγραφή των αναφορών για τις οποίες έχει ήδη σταλεί ειδοποίηση σε αυτή τη συνεδρία
+    private val notifiedReportIds = ConcurrentHashMap.newKeySet<String>()
+
+    /**
+     * Δημιουργία NotificationChannel (απαραίτητο για Android 8.0+ / API 26+).
+     */
+    fun createNotificationChannel(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, importance).apply {
+                description = CHANNEL_DESC
+                enableVibration(true)
+            }
+            val notificationManager = context.getSystemService(NotificationManager::class.java)
+            notificationManager?.createNotificationChannel(channel)
+        }
+    }
+
+    /**
+     * Εμφάνιση ειδοποίησης για επικυρωμένο συμβάν εντός ακτίνας.
+     */
+    fun showNearbyAlertNotification(
+        context: Context,
+        report: Report,
+        distanceMeters: Double
+    ) {
+        // Έλεγχος αν έχει ήδη σταλεί ειδοποίηση για το συγκεκριμένο συμβάν
+        if (report.id.isNotBlank() && !notifiedReportIds.add(report.id)) {
+            return
+        }
+
+        // Έλεγχος άδειας POST_NOTIFICATIONS για Android 13+ (API 33+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            }
+        }
+
+        createNotificationChannel(context)
+
+        val formattedDistance = DistanceCalculator.formatDistance(distanceMeters)
+        val categoryTitle = report.reportCategory.titleEl
+        val advice = if (report.practicalAdvice.isNotBlank()) {
+            report.practicalAdvice
+        } else {
+            report.reportCategory.defaultAdviceEl
+        }
+
+        val title = "⚠️ $categoryTitle ($formattedDistance)"
+        val shortText = if (advice.isNotBlank()) "Οδηγία: $advice" else report.description
+
+        val bigText = buildString {
+            append("Απόσταση: $formattedDistance")
+            if (report.address.isNotBlank()) {
+                append("\nΤοποθεσία: ${report.address}")
+            }
+            if (advice.isNotBlank()) {
+                append("\n💡 Οδηγία: $advice")
+            }
+            if (report.description.isNotBlank()) {
+                append("\nΠεριγραφή: ${report.description}")
+            }
+        }
+
+        // Intent για άνοιγμα της εφαρμογής κατά το πάτημα της ειδοποίησης
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            report.id.hashCode(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle(title)
+            .setContentText(shortText)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
+
+        val notificationId = if (report.id.isNotBlank()) report.id.hashCode() else System.currentTimeMillis().toInt()
+        NotificationManagerCompat.from(context).notify(notificationId, notification)
+    }
+
+    /**
+     * Καθαρισμός του ιστορικού ειδοποιημένων αναφορών (π.χ. κατά το logout).
+     */
+    fun clearNotifiedReports() {
+        notifiedReportIds.clear()
+    }
+}
