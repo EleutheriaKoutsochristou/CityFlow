@@ -81,6 +81,7 @@ fun StatsScreen(
     val cityResolved by viewModel.cityResolvedCount.collectAsState()
     val resolutionRate by viewModel.cityResolutionRate.collectAsState()
     val categoryBreakdown by viewModel.categoryBreakdown.collectAsState()
+    val statusBreakdown by viewModel.statusBreakdown.collectAsState()
 
     val filteredReports by viewModel.filteredUserReports.collectAsState()
     val timeFilter by viewModel.timeFilter.collectAsState()
@@ -176,7 +177,8 @@ fun StatsScreen(
                             cityTotal = cityTotal,
                             cityResolved = cityResolved,
                             resolutionRate = resolutionRate,
-                            categoryBreakdown = categoryBreakdown
+                            categoryBreakdown = categoryBreakdown,
+                            statusBreakdown = statusBreakdown
                         )
                     }
                     1 -> {
@@ -250,7 +252,8 @@ private fun StatsOverviewContent(
     cityTotal: Int,
     cityResolved: Int,
     resolutionRate: Int,
-    categoryBreakdown: List<CategoryStatItem>
+    categoryBreakdown: List<CategoryStatItem>,
+    statusBreakdown: List<StatusStatItem>
 ) {
     LazyColumn(
         modifier = Modifier
@@ -435,7 +438,20 @@ private fun StatsOverviewContent(
             }
         }
 
-        // 3. Συχνότερες Κατηγορίες (Category Breakdown)
+        // 3. Ραβδόγραμμα Ροής & Καταστάσεων Αναφορών (Status Funnel Bar Chart)
+        item {
+            StatusBarChartCard(statusBreakdown = statusBreakdown)
+        }
+
+        // 4. Κυκλικό Διάγραμμα Κατανομής Προβλημάτων (Category Donut Chart)
+        item {
+            CategoryDonutChartCard(
+                breakdown = categoryBreakdown,
+                totalReports = cityTotal
+            )
+        }
+
+        // 5. Αναλυτική Λίστα Συχνότερων Κατηγοριών
         item {
             Text(
                 text = stringResource(R.string.category_breakdown),

@@ -33,6 +33,12 @@ data class CategoryStatItem(
     val percentage: Float
 )
 
+data class StatusStatItem(
+    val status: ReportStatus,
+    val count: Int,
+    val percentage: Float
+)
+
 /**
  * ViewModel για την οθόνη Στατιστικών & Ιστορικού (Specification 10).
  *
@@ -165,6 +171,25 @@ class StatsViewModel(
                 val percentage = (count.toFloat() / total.toFloat())
                 CategoryStatItem(category, count, percentage)
             }.sortedByDescending { it.count }
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /**
+     * Κατανομή αναφορών ανά κατάσταση (Status Breakdown / Funnel).
+     */
+    val statusBreakdown: StateFlow<List<StatusStatItem>> = _allReports.map { reports ->
+        val total = reports.size
+        val countsByStatus = reports.groupBy { it.reportStatus }
+        listOf(
+            ReportStatus.SUBMITTED,
+            ReportStatus.VERIFIED,
+            ReportStatus.IN_PROGRESS,
+            ReportStatus.RESOLVED,
+            ReportStatus.REJECTED
+        ).map { status ->
+            val count = countsByStatus[status]?.size ?: 0
+            val percentage = if (total > 0) (count.toFloat() / total.toFloat()) else 0f
+            StatusStatItem(status, count, percentage)
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

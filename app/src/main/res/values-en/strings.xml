@@ -102,6 +102,8 @@
     <string name="stats_in_progress">In Progress</string>
     <string name="stats_critical_incidents">High / Critical Priority</string>
     <string name="stats_tab_all_history">City Reports</string>
+    <string name="stats_status_funnel_title">Incident Status &amp; Workflow</string>
+    <string name="stats_category_distribution_title">Problem Distribution by Category</string>
 
     <!-- Settings / Theme / Language -->
     <string name="settings">Settings</string>
