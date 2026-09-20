@@ -30,7 +30,9 @@ import com.example.cityflow.data.model.ReportStatus
 import com.example.cityflow.data.model.Resource
 import com.example.cityflow.data.model.User
 import com.example.cityflow.domain.PriorityCalculator
+import com.example.cityflow.ui.common.SettingsDialog
 import com.example.cityflow.util.ImageUtils
+import com.example.cityflow.util.MapUtils
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -63,6 +65,11 @@ fun EmployeeDashboardScreen(
     // Dialog state για προαιρετική επεξεργασία οδηγίας κατά την επικύρωση
     var reportToVerify by remember { mutableStateOf<Report?>(null) }
     var verifyAdviceText by remember { mutableStateOf("") }
+    var showSettingsDialog by remember { mutableStateOf(false) }
+
+    if (showSettingsDialog) {
+        SettingsDialog(onDismiss = { showSettingsDialog = false })
+    }
 
     val employeeIdentifier = currentUser?.fullName?.ifBlank { currentUser.email }
         ?: currentUser?.email.orEmpty().ifBlank { "Υπάλληλος" }
@@ -98,6 +105,13 @@ fun EmployeeDashboardScreen(
                     )
                 },
                 actions = {
+                    IconButton(onClick = { showSettingsDialog = true }) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = stringResource(R.string.settings),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                     if (onNavigateToStats != null) {
                         IconButton(onClick = onNavigateToStats) {
                             Icon(
@@ -467,21 +481,57 @@ fun ReportEmployeeCard(
                 }
             }
 
-            // Τοποθεσία
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Default.LocationOn,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = report.address.ifBlank {
-                        String.format(Locale.US, "GPS: %.5f, %.5f", report.latitude, report.longitude)
+            // Τοποθεσία & Κουμπί Χάρτη
+            val cardContext = LocalContext.current
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.LocationOn,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = report.address.ifBlank {
+                            String.format(Locale.US, "GPS: %.5f, %.5f", report.latitude, report.longitude)
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+                AssistChip(
+                    onClick = {
+                        MapUtils.openMap(
+                            context = cardContext,
+                            latitude = report.latitude,
+                            longitude = report.longitude,
+                            label = report.reportCategory.titleEl
+                        )
                     },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Map,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = stringResource(R.string.view_on_map),
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
                 )
             }
 

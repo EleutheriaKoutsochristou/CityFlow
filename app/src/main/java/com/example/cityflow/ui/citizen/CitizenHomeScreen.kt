@@ -42,7 +42,9 @@ import com.example.cityflow.data.model.ReportCategory
 import com.example.cityflow.data.model.ReportStatus
 import com.example.cityflow.data.model.User
 import com.example.cityflow.domain.DistanceCalculator
+import com.example.cityflow.ui.common.SettingsDialog
 import com.example.cityflow.util.ImageUtils
+import com.example.cityflow.util.MapUtils
 import com.example.cityflow.util.NotificationHelper
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -83,6 +85,11 @@ fun CitizenHomeScreen(
     val isLoadingReports by viewModel.isLoadingReports.collectAsState()
 
     var selectedImageForDialog by remember { mutableStateOf<String?>(null) }
+    var showSettingsDialog by remember { mutableStateOf(false) }
+
+    if (showSettingsDialog) {
+        SettingsDialog(onDismiss = { showSettingsDialog = false })
+    }
 
     val fusedLocationClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
@@ -209,6 +216,13 @@ fun CitizenHomeScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold) },
                 actions = {
+                    IconButton(onClick = { showSettingsDialog = true }) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = stringResource(R.string.settings),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                     IconButton(onClick = onLogout) {
                         Icon(
                             Icons.AutoMirrored.Filled.ExitToApp,
@@ -771,6 +785,34 @@ fun NearbyAlertCard(
                         contentScale = ContentScale.Crop
                     )
                 }
+            }
+
+            // Κουμπί Προβολής στον Χάρτη
+            val context = LocalContext.current
+            Spacer(modifier = Modifier.height(10.dp))
+            OutlinedButton(
+                onClick = {
+                    MapUtils.openMap(
+                        context = context,
+                        latitude = report.latitude,
+                        longitude = report.longitude,
+                        label = category.titleEl
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Icon(
+                    Icons.Default.Map,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.view_on_map),
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
         }
     }

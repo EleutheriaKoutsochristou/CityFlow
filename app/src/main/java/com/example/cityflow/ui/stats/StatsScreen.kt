@@ -35,7 +35,9 @@ import com.example.cityflow.data.model.Report
 import com.example.cityflow.data.model.ReportCategory
 import com.example.cityflow.data.model.ReportStatus
 import com.example.cityflow.data.model.User
+import com.example.cityflow.ui.common.SettingsDialog
 import com.example.cityflow.util.ImageUtils
+import com.example.cityflow.util.MapUtils
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -85,6 +87,11 @@ fun StatsScreen(
     val statusFilter by viewModel.statusFilter.collectAsState()
 
     var selectedPhotoForDialog by remember { mutableStateOf<String?>(null) }
+    var showSettingsDialog by remember { mutableStateOf(false) }
+
+    if (showSettingsDialog) {
+        SettingsDialog(onDismiss = { showSettingsDialog = false })
+    }
 
     LaunchedEffect(currentUser) {
         viewModel.initUser(currentUser, context)
@@ -104,6 +111,15 @@ fun StatsScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showSettingsDialog = true }) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = stringResource(R.string.settings),
                             tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
@@ -710,19 +726,59 @@ private fun UserReportHistoryCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            if (report.address.isNotBlank()) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.LocationOn,
-                        contentDescription = null,
-                        modifier = Modifier.size(14.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = report.address,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+            if (report.address.isNotBlank() || (report.latitude != 0.0 && report.longitude != 0.0)) {
+                val cardContext = LocalContext.current
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (report.address.isNotBlank()) {
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.LocationOn,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = report.address,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+                    AssistChip(
+                        onClick = {
+                            MapUtils.openMap(
+                                context = cardContext,
+                                latitude = report.latitude,
+                                longitude = report.longitude,
+                                label = report.reportCategory.titleEl
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Map,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        label = {
+                            Text(
+                                text = stringResource(R.string.view_on_map),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
                     )
                 }
             }

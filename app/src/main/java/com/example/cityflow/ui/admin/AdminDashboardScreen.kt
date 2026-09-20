@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +24,7 @@ import com.example.cityflow.R
 import com.example.cityflow.data.model.ReportCategory
 import com.example.cityflow.data.model.User
 import com.example.cityflow.domain.PriorityCalculator
+import com.example.cityflow.ui.common.SettingsDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +39,11 @@ fun AdminDashboardScreen(
     var wCount by remember { mutableFloatStateOf(PriorityCalculator.weightCount.toFloat()) }
     var wProximity by remember { mutableFloatStateOf(PriorityCalculator.weightProximity.toFloat()) }
     var wSeverity by remember { mutableFloatStateOf(PriorityCalculator.weightSeverity.toFloat()) }
+    var showSettingsDialog by remember { mutableStateOf(false) }
+
+    if (showSettingsDialog) {
+        SettingsDialog(onDismiss = { showSettingsDialog = false })
+    }
 
     Scaffold(
         topBar = {
@@ -49,6 +56,13 @@ fun AdminDashboardScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showSettingsDialog = true }) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = stringResource(R.string.settings),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                     // Quick jump to Stats
                     if (onNavigateToStats != null) {
                         IconButton(onClick = onNavigateToStats) {
