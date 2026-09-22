@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -36,11 +37,7 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var showSettingsDialog by remember { mutableStateOf(false) }
-
-    if (showSettingsDialog) {
-        SettingsDialog(onDismiss = { showSettingsDialog = false })
-    }
+    var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
 
     val authState by viewModel.authState.collectAsState()
 
@@ -181,5 +178,9 @@ fun LoginScreen(
                 }
             }
         }
+    }
+
+    if (showSettingsDialog) {
+        SettingsDialog(onDismiss = { showSettingsDialog = false })
     }
 }

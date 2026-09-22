@@ -13,6 +13,7 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,11 +66,7 @@ fun EmployeeDashboardScreen(
     // Dialog state για προαιρετική επεξεργασία οδηγίας κατά την επικύρωση
     var reportToVerify by remember { mutableStateOf<Report?>(null) }
     var verifyAdviceText by remember { mutableStateOf("") }
-    var showSettingsDialog by remember { mutableStateOf(false) }
-
-    if (showSettingsDialog) {
-        SettingsDialog(onDismiss = { showSettingsDialog = false })
-    }
+    var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
 
     val employeeIdentifier = currentUser?.fullName?.ifBlank { currentUser.email }
         ?: currentUser?.email.orEmpty().ifBlank { "Υπάλληλος" }
@@ -384,6 +381,10 @@ fun EmployeeDashboardScreen(
                 }
             }
         )
+    }
+
+    if (showSettingsDialog) {
+        SettingsDialog(onDismiss = { showSettingsDialog = false })
     }
 }
 

@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -39,11 +40,7 @@ fun AdminDashboardScreen(
     var wCount by remember { mutableFloatStateOf(PriorityCalculator.weightCount.toFloat()) }
     var wProximity by remember { mutableFloatStateOf(PriorityCalculator.weightProximity.toFloat()) }
     var wSeverity by remember { mutableFloatStateOf(PriorityCalculator.weightSeverity.toFloat()) }
-    var showSettingsDialog by remember { mutableStateOf(false) }
-
-    if (showSettingsDialog) {
-        SettingsDialog(onDismiss = { showSettingsDialog = false })
-    }
+    var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -308,5 +305,9 @@ fun AdminDashboardScreen(
                 }
             }
         }
+    }
+
+    if (showSettingsDialog) {
+        SettingsDialog(onDismiss = { showSettingsDialog = false })
     }
 }

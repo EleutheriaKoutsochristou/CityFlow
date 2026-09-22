@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -88,11 +89,7 @@ fun StatsScreen(
     val statusFilter by viewModel.statusFilter.collectAsState()
 
     var selectedPhotoForDialog by remember { mutableStateOf<String?>(null) }
-    var showSettingsDialog by remember { mutableStateOf(false) }
-
-    if (showSettingsDialog) {
-        SettingsDialog(onDismiss = { showSettingsDialog = false })
-    }
+    var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(currentUser) {
         viewModel.initUser(currentUser, context)
@@ -233,6 +230,10 @@ fun StatsScreen(
                 }
             }
         }
+    }
+
+    if (showSettingsDialog) {
+        SettingsDialog(onDismiss = { showSettingsDialog = false })
     }
 }
 
