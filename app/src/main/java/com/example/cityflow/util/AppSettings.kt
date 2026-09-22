@@ -40,6 +40,8 @@ object AppSettings {
 
         val savedLang = prefs.getString(KEY_LANGUAGE, null)
         val activeLang = if (savedLang != null) {
+            val localeList = LocaleListCompat.forLanguageTags(savedLang)
+            AppCompatDelegate.setApplicationLocales(localeList)
             savedLang
         } else {
             val appLocales = AppCompatDelegate.getApplicationLocales()

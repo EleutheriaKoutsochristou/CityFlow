@@ -8,6 +8,7 @@ import com.example.cityflow.data.model.ReportCategory
 import com.example.cityflow.data.model.ReportStatus
 import com.example.cityflow.data.model.Resource
 import com.example.cityflow.data.repository.ReportRepository
+import com.example.cityflow.util.AppSettings
 import com.example.cityflow.util.ImageUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -118,7 +119,7 @@ class SubmitReportViewModel(
             timestamp = System.currentTimeMillis(),
             status = ReportStatus.SUBMITTED.name,
             notificationRadiusMeters = category.defaultRadiusMeters,
-            practicalAdvice = category.defaultAdviceEl
+            practicalAdvice = category.getDefaultAdvice(AppSettings.currentLanguage.value)
         )
 
         viewModelScope.launch {

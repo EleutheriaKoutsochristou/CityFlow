@@ -29,7 +29,9 @@ object PriorityCalculator {
         LOW("Χαμηλή", "Low"),
         MEDIUM("Μέτρια", "Medium"),
         HIGH("Υψηλή", "High"),
-        CRITICAL("Κρίσιμη", "Critical")
+        CRITICAL("Κρίσιμη", "Critical");
+
+        fun getTitle(lang: String): String = if (lang == "en") titleEn else titleEl
     }
 
     /**

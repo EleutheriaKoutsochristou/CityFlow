@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import com.example.cityflow.R
 import com.example.cityflow.data.model.ReportCategory
 import com.example.cityflow.data.model.ReportStatus
+import com.example.cityflow.ui.common.localizedTitle
+import com.example.cityflow.util.AppSettings
 import java.util.Locale
 import kotlin.math.max
 
@@ -58,14 +60,25 @@ fun getStatusColor(status: ReportStatus): Color {
     }
 }
 
-fun getStatusShortLabel(status: ReportStatus): String {
-    return when (status) {
-        ReportStatus.SUBMITTED -> "Υποβλ."
-        ReportStatus.VERIFIED -> "Επικυρ."
-        ReportStatus.IN_PROGRESS -> "Εξέλιξη"
-        ReportStatus.RESOLVED -> "Επιλύθ."
-        ReportStatus.REJECTED -> "Απορρ."
-        ReportStatus.UNDER_REVIEW -> "Έλεγχος"
+fun getStatusShortLabel(status: ReportStatus, isEnglish: Boolean = false): String {
+    return if (isEnglish) {
+        when (status) {
+            ReportStatus.SUBMITTED -> "Submit."
+            ReportStatus.VERIFIED -> "Verif."
+            ReportStatus.IN_PROGRESS -> "Prog."
+            ReportStatus.RESOLVED -> "Resolv."
+            ReportStatus.REJECTED -> "Reject."
+            ReportStatus.UNDER_REVIEW -> "Review"
+        }
+    } else {
+        when (status) {
+            ReportStatus.SUBMITTED -> "Υποβλ."
+            ReportStatus.VERIFIED -> "Επικυρ."
+            ReportStatus.IN_PROGRESS -> "Εξέλιξη"
+            ReportStatus.RESOLVED -> "Επιλύθ."
+            ReportStatus.REJECTED -> "Απορρ."
+            ReportStatus.UNDER_REVIEW -> "Έλεγχος"
+        }
     }
 }
 
@@ -154,6 +167,7 @@ fun CategoryDonutChartCard(
                         }
                     }
 
+                    val isEnglish = AppSettings.currentLanguage.collectAsState().value == "en"
                     // Total Count Label in Center
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
@@ -163,7 +177,7 @@ fun CategoryDonutChartCard(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = if (totalReports == 1) "Συμβάν" else "Συμβάντα",
+                            text = if (isEnglish) (if (totalReports == 1) "Incident" else "Incidents") else (if (totalReports == 1) "Συμβάν" else "Συμβάντα"),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -205,7 +219,7 @@ fun CategoryDonutChartCard(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = item.category.titleEl,
+                                    text = item.category.localizedTitle,
                                     style = MaterialTheme.typography.bodyMedium,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
@@ -267,6 +281,7 @@ fun StatusBarChartCard(
                 animationSpec = tween(durationMillis = 1000, easing = FastOutSlowInEasing),
                 label = "barAnim"
             )
+            val isEnglish = AppSettings.currentLanguage.collectAsState().value == "en"
 
             // Bar Chart Area
             Row(
@@ -281,7 +296,7 @@ fun StatusBarChartCard(
                     val barRatio = (item.count.toFloat() / maxCount.toFloat()).coerceIn(0f, 1f)
                     val barHeightFraction = (barRatio * animProgress).coerceAtLeast(0.04f)
                     val color = getStatusColor(item.status)
-                    val shortLabel = getStatusShortLabel(item.status)
+                    val shortLabel = getStatusShortLabel(item.status, isEnglish)
 
                     Column(
                         modifier = Modifier
@@ -343,7 +358,7 @@ fun StatusBarChartCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "${item.status.titleEl}: ${item.count}",
+                            text = "${item.status.localizedTitle}: ${item.count}",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -364,7 +379,7 @@ fun StatusBarChartCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "${item.status.titleEl}: ${item.count}",
+                            text = "${item.status.localizedTitle}: ${item.count}",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

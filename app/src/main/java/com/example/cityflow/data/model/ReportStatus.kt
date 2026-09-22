@@ -14,6 +14,8 @@ enum class ReportStatus(
     RESOLVED("Επιλύθηκε", "Resolved"),
     REJECTED("Απορρίφθηκε", "Rejected");
 
+    fun getTitle(lang: String): String = if (lang == "en") titleEn else titleEl
+
     companion object {
         fun fromString(value: String?): ReportStatus {
             return entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: SUBMITTED

@@ -44,6 +44,8 @@ import com.example.cityflow.data.model.ReportStatus
 import com.example.cityflow.data.model.User
 import com.example.cityflow.domain.DistanceCalculator
 import com.example.cityflow.ui.common.SettingsDialog
+import com.example.cityflow.ui.common.localizedTitle
+import com.example.cityflow.ui.common.localizedAdvice
 import com.example.cityflow.util.ImageUtils
 import com.example.cityflow.util.MapUtils
 import com.example.cityflow.util.NotificationHelper
@@ -620,7 +622,7 @@ fun NearbyAlertCard(
     val practicalAdvice = if (report.practicalAdvice.isNotBlank()) {
         report.practicalAdvice
     } else {
-        category.defaultAdviceEl
+        category.localizedAdvice
     }
 
     val dateFormatter = remember {
@@ -663,7 +665,7 @@ fun NearbyAlertCard(
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = category.titleEl,
+                        text = category.localizedTitle,
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -797,7 +799,7 @@ fun NearbyAlertCard(
                         context = context,
                         latitude = report.latitude,
                         longitude = report.longitude,
-                        label = category.titleEl
+                        label = category.localizedTitle
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),

@@ -26,6 +26,8 @@ import com.example.cityflow.data.model.ReportCategory
 import com.example.cityflow.data.model.User
 import com.example.cityflow.domain.PriorityCalculator
 import com.example.cityflow.ui.common.SettingsDialog
+import com.example.cityflow.ui.common.localizedTitle
+import com.example.cityflow.ui.common.localizedAdvice
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -286,7 +288,7 @@ fun AdminDashboardScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = category.titleEl,
+                                text = category.localizedTitle,
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.weight(1f)
@@ -297,7 +299,7 @@ fun AdminDashboardScreen(
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Σοβαρότητα: ${category.defaultSeverity}/5 • Οδηγία: ${category.defaultAdviceEl}",
+                            text = "Σοβαρότητα: ${category.defaultSeverity}/5 • Οδηγία: ${category.localizedAdvice}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

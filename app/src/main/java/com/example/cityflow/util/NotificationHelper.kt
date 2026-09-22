@@ -99,26 +99,28 @@ object NotificationHelper {
         createNotificationChannel(context)
 
         val formattedDistance = DistanceCalculator.formatDistance(distanceMeters)
-        val categoryTitle = report.reportCategory.titleEl
+        val currentLang = AppSettings.currentLanguage.value
+        val isEn = currentLang == "en"
+        val categoryTitle = report.reportCategory.getTitle(currentLang)
         val advice = if (report.practicalAdvice.isNotBlank()) {
             report.practicalAdvice
         } else {
-            report.reportCategory.defaultAdviceEl
+            report.reportCategory.getDefaultAdvice(currentLang)
         }
 
         val title = "⚠️ $categoryTitle ($formattedDistance)"
-        val shortText = if (advice.isNotBlank()) "Οδηγία: $advice" else report.description
+        val shortText = if (advice.isNotBlank()) "${if (isEn) "Advice" else "Οδηγία"}: $advice" else report.description
 
         val bigText = buildString {
-            append("Απόσταση: $formattedDistance")
+            append(if (isEn) "Distance: $formattedDistance" else "Απόσταση: $formattedDistance")
             if (report.address.isNotBlank()) {
-                append("\nΤοποθεσία: ${report.address}")
+                append(if (isEn) "\nLocation: ${report.address}" else "\nΤοποθεσία: ${report.address}")
             }
             if (advice.isNotBlank()) {
-                append("\n💡 Οδηγία: $advice")
+                append(if (isEn) "\n💡 Advice: $advice" else "\n💡 Οδηγία: $advice")
             }
             if (report.description.isNotBlank()) {
-                append("\nΠεριγραφή: ${report.description}")
+                append(if (isEn) "\nDescription: ${report.description}" else "\nΠεριγραφή: ${report.description}")
             }
         }
 

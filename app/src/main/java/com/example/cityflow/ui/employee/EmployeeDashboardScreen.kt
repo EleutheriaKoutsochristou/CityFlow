@@ -32,6 +32,8 @@ import com.example.cityflow.data.model.Resource
 import com.example.cityflow.data.model.User
 import com.example.cityflow.domain.PriorityCalculator
 import com.example.cityflow.ui.common.SettingsDialog
+import com.example.cityflow.ui.common.localizedTitle
+import com.example.cityflow.util.AppSettings
 import com.example.cityflow.util.ImageUtils
 import com.example.cityflow.util.MapUtils
 import java.text.SimpleDateFormat
@@ -292,7 +294,7 @@ fun EmployeeDashboardScreen(
                             onVerify = {
                                 reportToVerify = report
                                 verifyAdviceText = report.practicalAdvice.ifBlank {
-                                    report.reportCategory.defaultAdviceEl
+                                    report.reportCategory.getDefaultAdvice(AppSettings.currentLanguage.value)
                                 }
                             },
                             onSetInProgress = {
@@ -342,7 +344,7 @@ fun EmployeeDashboardScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
-                        text = "Επικύρωση του συμβάντος: \"${target.reportCategory.titleEl}\"",
+                        text = "Επικύρωση του συμβάντος: \"${target.reportCategory.localizedTitle}\"",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
@@ -436,7 +438,7 @@ fun ReportEmployeeCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = report.reportCategory.titleEl,
+                        text = report.reportCategory.localizedTitle,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -516,7 +518,7 @@ fun ReportEmployeeCard(
                             context = cardContext,
                             latitude = report.latitude,
                             longitude = report.longitude,
-                            label = report.reportCategory.titleEl
+                            label = report.reportCategory.localizedTitle
                         )
                     },
                     leadingIcon = {
@@ -747,7 +749,7 @@ fun PriorityBadge(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "${priorityLevel.titleEl} (${String.format(Locale.US, "%.1f", score)})",
+                text = "${priorityLevel.localizedTitle} (${String.format(Locale.US, "%.1f", score)})",
                 color = textColor,
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold
@@ -775,7 +777,7 @@ fun StatusBadge(status: ReportStatus) {
         shape = RoundedCornerShape(6.dp)
     ) {
         Text(
-            text = status.titleEl,
+            text = status.localizedTitle,
             color = txtColor,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.SemiBold,

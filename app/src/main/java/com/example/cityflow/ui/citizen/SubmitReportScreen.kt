@@ -42,6 +42,7 @@ import com.example.cityflow.R
 import com.example.cityflow.data.model.ReportCategory
 import com.example.cityflow.data.model.Resource
 import com.example.cityflow.data.model.User
+import com.example.cityflow.ui.common.localizedTitle
 import com.example.cityflow.util.ImageUtils
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -320,7 +321,7 @@ fun SubmitReportScreen(
                 onExpandedChange = { dropdownExpanded = !dropdownExpanded }
             ) {
                 OutlinedTextField(
-                    value = selectedCategory.titleEl,
+                    value = selectedCategory.localizedTitle,
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = {
@@ -342,7 +343,7 @@ fun SubmitReportScreen(
                             text = {
                                 Column(modifier = Modifier.padding(vertical = 4.dp)) {
                                     Text(
-                                        text = cat.titleEl,
+                                        text = cat.localizedTitle,
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = if (cat == selectedCategory) FontWeight.Bold else FontWeight.Normal
                                     )

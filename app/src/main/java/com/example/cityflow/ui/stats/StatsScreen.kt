@@ -37,6 +37,7 @@ import com.example.cityflow.data.model.ReportCategory
 import com.example.cityflow.data.model.ReportStatus
 import com.example.cityflow.data.model.User
 import com.example.cityflow.ui.common.SettingsDialog
+import com.example.cityflow.ui.common.localizedTitle
 import com.example.cityflow.util.ImageUtils
 import com.example.cityflow.util.MapUtils
 import java.text.SimpleDateFormat
@@ -546,7 +547,7 @@ private fun CategoryBreakdownRow(item: CategoryStatItem) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = item.category.titleEl,
+                    text = item.category.localizedTitle,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.weight(1f)
@@ -627,27 +628,27 @@ private fun MyReportsHistoryContent(
             FilterChip(
                 selected = statusFilter == StatsStatusFilter.SUBMITTED,
                 onClick = { onStatusFilterChange(StatsStatusFilter.SUBMITTED) },
-                label = { Text(ReportStatus.SUBMITTED.titleEl) }
+                label = { Text(ReportStatus.SUBMITTED.localizedTitle) }
             )
             FilterChip(
                 selected = statusFilter == StatsStatusFilter.VERIFIED,
                 onClick = { onStatusFilterChange(StatsStatusFilter.VERIFIED) },
-                label = { Text(ReportStatus.VERIFIED.titleEl) }
+                label = { Text(ReportStatus.VERIFIED.localizedTitle) }
             )
             FilterChip(
                 selected = statusFilter == StatsStatusFilter.IN_PROGRESS,
                 onClick = { onStatusFilterChange(StatsStatusFilter.IN_PROGRESS) },
-                label = { Text(ReportStatus.IN_PROGRESS.titleEl) }
+                label = { Text(ReportStatus.IN_PROGRESS.localizedTitle) }
             )
             FilterChip(
                 selected = statusFilter == StatsStatusFilter.RESOLVED,
                 onClick = { onStatusFilterChange(StatsStatusFilter.RESOLVED) },
-                label = { Text(ReportStatus.RESOLVED.titleEl) }
+                label = { Text(ReportStatus.RESOLVED.localizedTitle) }
             )
             FilterChip(
                 selected = statusFilter == StatsStatusFilter.REJECTED,
                 onClick = { onStatusFilterChange(StatsStatusFilter.REJECTED) },
-                label = { Text(ReportStatus.REJECTED.titleEl) }
+                label = { Text(ReportStatus.REJECTED.localizedTitle) }
             )
         }
 
@@ -729,7 +730,7 @@ private fun UserReportHistoryCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = report.reportCategory.titleEl,
+                    text = report.reportCategory.localizedTitle,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
@@ -779,7 +780,7 @@ private fun UserReportHistoryCard(
                                 context = cardContext,
                                 latitude = report.latitude,
                                 longitude = report.longitude,
-                                label = report.reportCategory.titleEl
+                                label = report.reportCategory.localizedTitle
                             )
                         },
                         leadingIcon = {
@@ -884,7 +885,7 @@ private fun HistoryStatusBadge(status: ReportStatus) {
         shape = RoundedCornerShape(6.dp)
     ) {
         Text(
-            text = status.titleEl,
+            text = status.localizedTitle,
             color = txtColor,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,

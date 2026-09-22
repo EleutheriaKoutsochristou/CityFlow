@@ -73,6 +73,10 @@ enum class ReportCategory(
         defaultAdviceEn = "Exercise caution when moving through this point."
     );
 
+    fun getTitle(lang: String): String = if (lang == "en") titleEn else titleEl
+
+    fun getDefaultAdvice(lang: String): String = if (lang == "en") defaultAdviceEn else defaultAdviceEl
+
     companion object {
         fun fromString(value: String?): ReportCategory {
             return entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: OTHER
