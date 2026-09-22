@@ -712,6 +712,7 @@ private fun UserReportHistoryCard(
             ImageUtils.base64ToBitmap(report.imageBase64)
         } else null
     }
+    val categoryTitle = report.reportCategory.localizedTitle
 
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
@@ -730,7 +731,7 @@ private fun UserReportHistoryCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = report.reportCategory.localizedTitle,
+                    text = categoryTitle,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
@@ -780,7 +781,7 @@ private fun UserReportHistoryCard(
                                 context = cardContext,
                                 latitude = report.latitude,
                                 longitude = report.longitude,
-                                label = report.reportCategory.localizedTitle
+                                label = categoryTitle
                             )
                         },
                         leadingIcon = {

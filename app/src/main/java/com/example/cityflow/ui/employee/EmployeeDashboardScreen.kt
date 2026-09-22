@@ -403,6 +403,7 @@ fun ReportEmployeeCard(
 ) {
     val priorityLevel = PriorityCalculator.getPriorityLevel(report.priorityScore)
     val status = report.reportStatus
+    val categoryTitle = report.reportCategory.localizedTitle
 
     // Μορφοποίηση ημερομηνίας
     val dateFormatted = remember(report.timestamp) {
@@ -438,7 +439,7 @@ fun ReportEmployeeCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = report.reportCategory.localizedTitle,
+                        text = categoryTitle,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -518,7 +519,7 @@ fun ReportEmployeeCard(
                             context = cardContext,
                             latitude = report.latitude,
                             longitude = report.longitude,
-                            label = report.reportCategory.localizedTitle
+                            label = categoryTitle
                         )
                     },
                     leadingIcon = {

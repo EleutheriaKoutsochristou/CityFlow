@@ -618,6 +618,7 @@ fun NearbyAlertCard(
     val report = alertItem.report
     val distanceFormatted = DistanceCalculator.formatDistance(alertItem.distanceMeters)
     val category = report.reportCategory
+    val categoryTitle = category.localizedTitle
 
     val practicalAdvice = if (report.practicalAdvice.isNotBlank()) {
         report.practicalAdvice
@@ -665,7 +666,7 @@ fun NearbyAlertCard(
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = category.localizedTitle,
+                        text = categoryTitle,
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -799,7 +800,7 @@ fun NearbyAlertCard(
                         context = context,
                         latitude = report.latitude,
                         longitude = report.longitude,
-                        label = category.localizedTitle
+                        label = categoryTitle
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
