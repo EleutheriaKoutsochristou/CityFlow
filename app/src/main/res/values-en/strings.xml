@@ -126,4 +126,29 @@
     <string name="admin_view_employee_dashboard">View Employee Dashboard</string>
     <string name="admin_switch_to_admin">Admin Settings</string>
     <string name="admin_category_radii_title">Default Notification Radii</string>
+
+    <!-- Additional UI Strings -->
+    <string name="welcome_user">Welcome, %1$s!</string>
+    <string name="role_label">Role: %1$s</string>
+    <string name="location_unknown">Unknown location</string>
+    <string name="location_tap_refresh">Tap refresh for GPS fix</string>
+    <string name="btn_submit_gps">Submit with GPS</string>
+    <string name="stats_history_quick">History &amp; Stats</string>
+    <string name="gps_enable_prompt">Enable GPS location to view nearby mobility issues in real time.</string>
+    <string name="btn_enable_location">Enable Location</string>
+    <string name="no_nearby_obstacles">Your area is clear of reported obstacles.</string>
+    <string name="incident_photo">Incident photo</string>
+    <string name="close">Close</string>
+    <string name="reports_count">%1$d reports</string>
+    <string name="incidents_count">%1$d incidents</string>
+    <string name="verify_report_title">Verify Report</string>
+    <string name="verify_incident_prompt">Verify incident: \"%1$s\"</string>
+    <string name="verify_advice_desc">Set or customize the practical advice citizens will see in alerts:</string>
+    <string name="admin_logged_in">Logged in: %1$s</string>
+    <string name="admin_review_reports_desc">Review and verify all submitted reports</string>
+    <string name="admin_stats_desc">View indicators, category distribution and resolution rate</string>
+    <string name="category_severity_and_advice">Severity: %1$d/5 • Advice: %2$s</string>
+    <string name="error_gps_needed_submission">GPS location required before submission.</string>
+    <string name="location_permission_denied">Location access denied.</string>
+    <string name="location_gps_failed">Could not acquire GPS fix.</string>
 </resources>

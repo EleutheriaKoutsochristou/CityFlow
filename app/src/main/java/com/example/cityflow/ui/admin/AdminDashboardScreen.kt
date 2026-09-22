@@ -111,8 +111,10 @@ fun AdminDashboardScreen(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f))
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
+                        val defaultAdminName = stringResource(R.string.role_admin)
+                        val adminName = currentUser?.fullName?.ifBlank { defaultAdminName } ?: defaultAdminName
                         Text(
-                            text = "Συνδεδεμένος: ${currentUser?.fullName ?: "Διαχειριστής"}",
+                            text = stringResource(R.string.admin_logged_in, adminName),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -150,7 +152,7 @@ fun AdminDashboardScreen(
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "Έλεγχος και επικύρωση όλων των υποβληθέντων αναφορών",
+                                text = stringResource(R.string.admin_review_reports_desc),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -185,7 +187,7 @@ fun AdminDashboardScreen(
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "Προβολή δεικτών, κατανομής κατηγοριών και ποσοστού επίλυσης",
+                                    text = stringResource(R.string.admin_stats_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -294,12 +296,16 @@ fun AdminDashboardScreen(
                                 modifier = Modifier.weight(1f)
                             )
                             Badge(containerColor = MaterialTheme.colorScheme.primary) {
-                                Text("Ακτίνα: ${category.defaultRadiusMeters.toInt()}m")
+                                Text(stringResource(R.string.radius_meters, category.defaultRadiusMeters.toFloat()))
                             }
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Σοβαρότητα: ${category.defaultSeverity}/5 • Οδηγία: ${category.localizedAdvice}",
+                            text = stringResource(
+                                R.string.category_severity_and_advice,
+                                category.defaultSeverity,
+                                category.localizedAdvice
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

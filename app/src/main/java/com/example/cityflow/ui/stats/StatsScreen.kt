@@ -389,12 +389,12 @@ private fun StatsOverviewContent(
                     ) {
                         Column {
                             Text(
-                                text = "Σύνολο Αναφορών Πόλης",
+                                text = stringResource(R.string.stats_city_summary),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "$cityTotal συμβάντα",
+                                text = stringResource(R.string.incidents_count, cityTotal),
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold
                             )
@@ -402,7 +402,7 @@ private fun StatsOverviewContent(
 
                         Column(horizontalAlignment = Alignment.End) {
                             Text(
-                                text = "Επιλύθηκαν",
+                                text = stringResource(R.string.resolved_reports_count),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -813,7 +813,7 @@ private fun UserReportHistoryCard(
                         .padding(8.dp)
                 ) {
                     Text(
-                        text = "Σχόλια / Περιγραφή:",
+                        text = stringResource(R.string.description_label),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.primary

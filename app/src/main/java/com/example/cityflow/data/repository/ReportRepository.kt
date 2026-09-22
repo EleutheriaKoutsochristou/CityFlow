@@ -5,6 +5,7 @@ import com.example.cityflow.data.model.ReportStatus
 import com.example.cityflow.data.model.Resource
 import com.example.cityflow.domain.DistanceCalculator
 import com.example.cityflow.domain.PriorityCalculator
+import com.example.cityflow.util.AppSettings
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
@@ -66,7 +67,11 @@ class ReportRepository(
             }
 
             if (hasDuplicateFromSameUser) {
-                return Resource.Error("Έχετε ήδη υποβάλει αναφορά για αυτό το σημείο τα τελευταία 30 λεπτά. Παρακαλώ περιμένετε την επεξεργασία της.")
+                val isEn = AppSettings.currentLanguage.value == "en"
+                return Resource.Error(
+                    if (isEn) "You have already submitted a report for this location in the last 30 minutes. Please wait for it to be processed."
+                    else "Έχετε ήδη υποβάλει αναφορά για αυτό το σημείο τα τελευταία 30 λεπτά. Παρακαλώ περιμένετε την επεξεργασία της."
+                )
             }
 
             // Εύρεση παρόμοιων αναφορών και υπολογισμός σκορ
@@ -104,7 +109,8 @@ class ReportRepository(
             batch.commit().await()
             Resource.Success(docId)
         } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Αποτυχία υποβολής αναφοράς.", e)
+            val isEn = AppSettings.currentLanguage.value == "en"
+            Resource.Error(e.localizedMessage ?: (if (isEn) "Failed to submit report." else "Αποτυχία υποβολής αναφοράς."), e)
         }
     }
 
@@ -185,7 +191,8 @@ class ReportRepository(
             reportsCollection.document(reportId).update(updates).await()
             Resource.Success(Unit)
         } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Αποτυχία ενημέρωσης κατάστασης.", e)
+            val isEn = AppSettings.currentLanguage.value == "en"
+            Resource.Error(e.localizedMessage ?: (if (isEn) "Failed to update status." else "Αποτυχία ενημέρωσης κατάστασης."), e)
         }
     }
 
@@ -229,7 +236,8 @@ class ReportRepository(
             reportsCollection.document(reportId).delete().await()
             Resource.Success(Unit)
         } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Αποτυχία διαγραφής αναφοράς.", e)
+            val isEn = AppSettings.currentLanguage.value == "en"
+            Resource.Error(e.localizedMessage ?: (if (isEn) "Failed to delete report." else "Αποτυχία διαγραφής αναφοράς."), e)
         }
     }
 }

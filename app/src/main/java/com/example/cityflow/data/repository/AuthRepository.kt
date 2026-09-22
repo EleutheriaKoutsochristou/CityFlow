@@ -3,6 +3,7 @@ package com.example.cityflow.data.repository
 import com.example.cityflow.data.model.Resource
 import com.example.cityflow.data.model.User
 import com.example.cityflow.data.model.UserRole
+import com.example.cityflow.util.AppSettings
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -37,18 +38,19 @@ class AuthRepository(
             trimmedIdentifier.equals("admin@cityflow.com", ignoreCase = true) ||
             trimmedIdentifier.equals("admin@cityflow.local", ignoreCase = true)
         ) {
+            val isEn = AppSettings.currentLanguage.value == "en"
             return if (trimmedPassword == "admin") {
                 Resource.Success(
                     User(
                         id = "hardcoded_admin",
                         email = "admin@cityflow.local",
-                        fullName = "Administrator",
+                        fullName = if (isEn) "Administrator" else "Διαχειριστής",
                         role = UserRole.ADMIN.name,
                         createdAt = System.currentTimeMillis()
                     )
                 )
             } else {
-                Resource.Error("Λανθασμένος κωδικός πρόσβασης για το λογαριασμό admin.")
+                Resource.Error(if (isEn) "Incorrect password for admin account." else "Λανθασμένος κωδικός πρόσβασης για το λογαριασμό admin.")
             }
         }
 
@@ -56,25 +58,27 @@ class AuthRepository(
             trimmedIdentifier.equals("employee@cityflow.com", ignoreCase = true) ||
             trimmedIdentifier.equals("employee@cityflow.local", ignoreCase = true)
         ) {
+            val isEn = AppSettings.currentLanguage.value == "en"
             return if (trimmedPassword == "employee") {
                 Resource.Success(
                     User(
                         id = "hardcoded_employee",
                         email = "employee@cityflow.local",
-                        fullName = "Υπάλληλος Δήμου",
+                        fullName = if (isEn) "Municipality Officer" else "Υπάλληλος Δήμου",
                         role = UserRole.EMPLOYEE.name,
                         createdAt = System.currentTimeMillis()
                     )
                 )
             } else {
-                Resource.Error("Λανθασμένος κωδικός πρόσβασης για το λογαριασμό employee.")
+                Resource.Error(if (isEn) "Incorrect password for employee account." else "Λανθασμένος κωδικός πρόσβασης για το λογαριασμό employee.")
             }
         }
 
         return try {
+            val isEn = AppSettings.currentLanguage.value == "en"
             val authResult = auth.signInWithEmailAndPassword(trimmedIdentifier, password).await()
             val firebaseUser = authResult.user
-                ?: return Resource.Error("Αποτυχία ταυτοποίησης: Δεν βρέθηκε χρήστης.")
+                ?: return Resource.Error(if (isEn) "Authentication failed: No user found." else "Αποτυχία ταυτοποίησης: Δεν βρέθηκε χρήστης.")
 
             val userSnapshot = firestore.collection("users")
                 .document(firebaseUser.uid)
@@ -84,13 +88,14 @@ class AuthRepository(
             val appUser = userSnapshot.toObject(User::class.java) ?: User(
                 id = firebaseUser.uid,
                 email = firebaseUser.email.orEmpty(),
-                fullName = firebaseUser.displayName.orEmpty().ifBlank { "Χρήστης" },
+                fullName = firebaseUser.displayName.orEmpty().ifBlank { if (isEn) "Citizen" else "Χρήστης" },
                 role = UserRole.CITIZEN.name
             )
 
             Resource.Success(appUser)
         } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Σφάλμα κατά τη σύνδεση.", e)
+            val isEn = AppSettings.currentLanguage.value == "en"
+            Resource.Error(e.localizedMessage ?: (if (isEn) "Error during sign in." else "Σφάλμα κατά τη σύνδεση."), e)
         }
     }
 
@@ -103,14 +108,15 @@ class AuthRepository(
         fullName: String,
         role: UserRole
     ): Resource<User> {
+        val isEn = AppSettings.currentLanguage.value == "en"
         if (role == UserRole.ADMIN) {
-            return Resource.Error("Η εγγραφή ως διαχειριστής δεν επιτρέπεται.")
+            return Resource.Error(if (isEn) "Registering as administrator is not permitted." else "Η εγγραφή ως διαχειριστής δεν επιτρέπεται.")
         }
 
         return try {
             val authResult = auth.createUserWithEmailAndPassword(email.trim(), password).await()
             val firebaseUser = authResult.user
-                ?: return Resource.Error("Αποτυχία εγγραφής: Δεν δημιουργήθηκε χρήστης.")
+                ?: return Resource.Error(if (isEn) "Registration failed: No user created." else "Αποτυχία εγγραφής: Δεν δημιουργήθηκε χρήστης.")
 
             val newUser = User(
                 id = firebaseUser.uid,
@@ -127,7 +133,7 @@ class AuthRepository(
 
             Resource.Success(newUser)
         } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Σφάλμα κατά την εγγραφή.", e)
+            Resource.Error(e.localizedMessage ?: (if (isEn) "Error during registration." else "Σφάλμα κατά την εγγραφή."), e)
         }
     }
 
@@ -136,12 +142,13 @@ class AuthRepository(
      */
     suspend fun getCurrentUserProfile(): Resource<User?> {
         val uid = currentUserId ?: return Resource.Success(null)
+        val isEn = AppSettings.currentLanguage.value == "en"
         return try {
             val snapshot = firestore.collection("users").document(uid).get().await()
             val user = snapshot.toObject(User::class.java)
             Resource.Success(user)
         } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Σφάλμα ανάκτησης προφίλ.", e)
+            Resource.Error(e.localizedMessage ?: (if (isEn) "Error retrieving profile." else "Σφάλμα ανάκτησης προφίλ."), e)
         }
     }
 

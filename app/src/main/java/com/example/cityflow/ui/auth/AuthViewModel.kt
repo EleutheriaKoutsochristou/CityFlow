@@ -6,6 +6,7 @@ import com.example.cityflow.data.model.Resource
 import com.example.cityflow.data.model.User
 import com.example.cityflow.data.model.UserRole
 import com.example.cityflow.data.repository.AuthRepository
+import com.example.cityflow.util.AppSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -61,8 +62,9 @@ class AuthViewModel(
         val trimmedIdentifier = email.trim()
         val trimmedPass = pass.trim()
 
+        val isEn = AppSettings.currentLanguage.value == "en"
         if (trimmedIdentifier.isBlank() || trimmedPass.isBlank()) {
-            _authState.value = Resource.Error("Συμπληρώστε email χρήστη και κωδικό.")
+            _authState.value = Resource.Error(if (isEn) "Please enter your email and password." else "Συμπληρώστε email χρήστη και κωδικό.")
             return
         }
 
@@ -79,7 +81,7 @@ class AuthViewModel(
                 _currentUser.value = adminUser
                 _authState.value = Resource.Success(adminUser)
             } else {
-                _authState.value = Resource.Error("Λανθασμένος κωδικός πρόσβασης για το λογαριασμό admin.")
+                _authState.value = Resource.Error(if (isEn) "Incorrect password for admin account." else "Λανθασμένος κωδικός πρόσβασης για το λογαριασμό admin.")
             }
             return
         }
@@ -98,13 +100,14 @@ class AuthViewModel(
      * Εγγραφή νέου χρήστη με ρόλο (CITIZEN ή EMPLOYEE).
      */
     fun register(email: String, pass: String, fullName: String, role: UserRole) {
+        val isEn = AppSettings.currentLanguage.value == "en"
         if (email.isBlank() || pass.isBlank() || fullName.isBlank()) {
-            _authState.value = Resource.Error("Συμπληρώστε όλα τα απαιτούμενα πεδία.")
+            _authState.value = Resource.Error(if (isEn) "Please fill in all required fields." else "Συμπληρώστε όλα τα απαιτούμενα πεδία.")
             return
         }
 
         if (pass.length < 6) {
-            _authState.value = Resource.Error("Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες.")
+            _authState.value = Resource.Error(if (isEn) "Password must be at least 6 characters." else "Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες.")
             return
         }
 

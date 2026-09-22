@@ -52,6 +52,7 @@ object AppSettings {
                 if (sysLang == "el" || sysLang == "en") sysLang else "el"
             }
         }
+        Locale.setDefault(Locale(activeLang))
         _currentLanguage.value = activeLang
         initialized = true
     }
@@ -82,6 +83,9 @@ object AppSettings {
         _currentLanguage.value = languageCode
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().putString(KEY_LANGUAGE, languageCode).apply()
+
+        val locale = Locale(languageCode)
+        Locale.setDefault(locale)
 
         val localeList = LocaleListCompat.forLanguageTags(languageCode)
         AppCompatDelegate.setApplicationLocales(localeList)

@@ -70,8 +70,9 @@ fun EmployeeDashboardScreen(
     var verifyAdviceText by remember { mutableStateOf("") }
     var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
 
+    val defaultEmployeeName = stringResource(R.string.role_employee)
     val employeeIdentifier = currentUser?.fullName?.ifBlank { currentUser.email }
-        ?: currentUser?.email.orEmpty().ifBlank { "Υπάλληλος" }
+        ?: currentUser?.email.orEmpty().ifBlank { defaultEmployeeName }
 
     // Εμφάνιση μηνυμάτων ενεργειών σε Snackbar
     LaunchedEffect(actionState) {
@@ -169,12 +170,12 @@ fun EmployeeDashboardScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Καλώς ήρθατε, $employeeIdentifier!",
+                            text = stringResource(R.string.welcome_user, employeeIdentifier),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Ρόλος: ${stringResource(R.string.role_employee)}",
+                            text = stringResource(R.string.role_label, stringResource(R.string.role_employee)),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -182,7 +183,7 @@ fun EmployeeDashboardScreen(
 
                     Badge(containerColor = MaterialTheme.colorScheme.primary) {
                         Text(
-                            text = "${reports.size} αναφορές",
+                            text = stringResource(R.string.reports_count, reports.size),
                             modifier = Modifier.padding(4.dp),
                             color = MaterialTheme.colorScheme.onPrimary
                         )
@@ -338,24 +339,24 @@ fun EmployeeDashboardScreen(
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Επικύρωση Αναφοράς", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.verify_report_title), fontWeight = FontWeight.Bold)
                 }
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
-                        text = "Επικύρωση του συμβάντος: \"${target.reportCategory.localizedTitle}\"",
+                        text = stringResource(R.string.verify_incident_prompt, target.reportCategory.localizedTitle),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = "Ορίστε ή προσαρμόστε την πρακτική οδηγία που θα βλέπουν οι πολίτες στις ειδοποιήσεις:",
+                        text = stringResource(R.string.verify_advice_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     OutlinedTextField(
                         value = verifyAdviceText,
                         onValueChange = { verifyAdviceText = it },
-                        label = { Text("Πρακτική Οδηγία") },
+                        label = { Text(stringResource(R.string.advice_label)) },
                         minLines = 2,
                         maxLines = 4,
                         modifier = Modifier.fillMaxWidth()
@@ -366,15 +367,15 @@ fun EmployeeDashboardScreen(
                 Button(
                     onClick = {
                         viewModel.updateStatus(
-                            reportId = target.id,
-                            newStatus = ReportStatus.VERIFIED,
-                            verifiedBy = employeeIdentifier,
-                            practicalAdvice = verifyAdviceText.trim()
+                             reportId = target.id,
+                             newStatus = ReportStatus.VERIFIED,
+                             verifiedBy = employeeIdentifier,
+                             practicalAdvice = verifyAdviceText.trim()
                         )
                         reportToVerify = null
                     }
                 ) {
-                    Text("Επικύρωση")
+                    Text(stringResource(R.string.btn_verify))
                 }
             },
             dismissButton = {
@@ -551,7 +552,7 @@ fun ReportEmployeeCard(
                         .padding(10.dp)
                 ) {
                     Text(
-                        text = "Σχόλια / Περιγραφή:",
+                        text = stringResource(R.string.description_label),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.primary
@@ -597,7 +598,7 @@ fun ReportEmployeeCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Οδηγία: ${report.practicalAdvice}",
+                        text = stringResource(R.string.advice_prefix, report.practicalAdvice),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -700,7 +701,7 @@ fun ReportEmployeeCard(
                                     modifier = Modifier.size(16.dp)
                                 )
                             },
-                            label = { Text("Ολοκληρώθηκε") }
+                            label = { Text(ReportStatus.RESOLVED.localizedTitle) }
                         )
                     }
 
@@ -715,7 +716,7 @@ fun ReportEmployeeCard(
                                     modifier = Modifier.size(16.dp)
                                 )
                             },
-                            label = { Text("Απορρίφθηκε") }
+                            label = { Text(ReportStatus.REJECTED.localizedTitle) }
                         )
                     }
 

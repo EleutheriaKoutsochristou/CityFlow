@@ -102,7 +102,11 @@ class SubmitReportViewModel(
         val lon = _longitude.value
 
         if (lat == null || lon == null) {
-            _submitState.value = Resource.Error("Απαιτείται λήψη τοποθεσίας GPS πριν την υποβολή.")
+            val isEn = AppSettings.currentLanguage.value == "en"
+            _submitState.value = Resource.Error(
+                if (isEn) "GPS location required before submission."
+                else "Απαιτείται λήψη τοποθεσίας GPS πριν την υποβολή."
+            )
             return
         }
 

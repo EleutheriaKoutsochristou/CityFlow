@@ -15,8 +15,13 @@ object MapUtils {
      * Σε περίπτωση που δεν υπάρχει εγκατεστημένη εφαρμογή χαρτών, ανοίγει το Google Maps στον browser.
      */
     fun openMap(context: Context, latitude: Double, longitude: Double, label: String = "") {
+        val isEn = AppSettings.currentLanguage.value == "en"
         if (latitude == 0.0 && longitude == 0.0) {
-            Toast.makeText(context, "Μη διαθέσιμες συντεταγμένες", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context,
+                if (isEn) "Coordinates not available" else "Μη διαθέσιμες συντεταγμένες",
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
 
@@ -40,7 +45,11 @@ object MapUtils {
                 }
                 context.startActivity(webIntent)
             } catch (e: Exception) {
-                Toast.makeText(context, "Δεν ήταν δυνατό το άνοιγμα του χάρτη", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    if (isEn) "Could not open map" else "Δεν ήταν δυνατό το άνοιγμα του χάρτη",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }

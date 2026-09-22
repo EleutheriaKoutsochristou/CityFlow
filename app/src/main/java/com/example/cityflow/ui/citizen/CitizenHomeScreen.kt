@@ -151,7 +151,7 @@ fun CitizenHomeScreen(
         ) == PackageManager.PERMISSION_GRANTED
 
         if (!hasFine && !hasCoarse) {
-            viewModel.setLocationError("Απαιτείται άδεια τοποθεσίας για τον εντοπισμό κοντινών ειδοποιήσεων.")
+            viewModel.setLocationError(context.getString(R.string.location_permission_needed))
             return
         }
 
@@ -168,18 +168,18 @@ fun CitizenHomeScreen(
                             if (lastLoc != null) {
                                 resolveAddress(lastLoc.latitude, lastLoc.longitude)
                             } else {
-                                viewModel.setLocationError("Δεν ήταν δυνατή η ανάκτηση στίγματος GPS.")
+                                viewModel.setLocationError(context.getString(R.string.location_gps_failed))
                             }
                         }.addOnFailureListener {
-                            viewModel.setLocationError("Αποτυχία λήψης τοποθεσίας.")
+                            viewModel.setLocationError(context.getString(R.string.location_not_available))
                         }
                     }
                 }
                 .addOnFailureListener {
-                    viewModel.setLocationError("Αποτυχία σύνδεσης με τις υπηρεσίες τοποθεσίας.")
+                    viewModel.setLocationError(context.getString(R.string.location_not_available))
                 }
         } catch (_: SecurityException) {
-            viewModel.setLocationError("Δεν δόθηκε άδεια τοποθεσίας.")
+            viewModel.setLocationError(context.getString(R.string.location_permission_denied))
         }
     }
 
@@ -192,7 +192,7 @@ fun CitizenHomeScreen(
         if (fineGranted || coarseGranted) {
             fetchLocation()
         } else {
-            viewModel.setLocationError("Η πρόσβαση στην τοποθεσία απορρίφθηκε.")
+            viewModel.setLocationError(context.getString(R.string.location_permission_denied))
         }
     }
 
@@ -253,13 +253,15 @@ fun CitizenHomeScreen(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f))
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
+                        val defaultRoleName = stringResource(R.string.role_citizen)
+                        val citizenName = currentUser?.fullName?.ifBlank { defaultRoleName } ?: defaultRoleName
                         Text(
-                            text = "Καλώς ήρθατε, ${currentUser?.fullName?.ifBlank { "Πολίτη" } ?: "Πολίτη"}!",
+                            text = stringResource(R.string.welcome_user, citizenName),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Ρόλος: ${stringResource(R.string.role_citizen)}",
+                            text = stringResource(R.string.role_label, defaultRoleName),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -305,7 +307,7 @@ fun CitizenHomeScreen(
                                     }
                                     locationError != null -> {
                                         Text(
-                                            text = locationError ?: "Άγνωστη τοποθεσία",
+                                            text = locationError ?: stringResource(R.string.location_unknown),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.error,
                                             maxLines = 1
@@ -313,7 +315,7 @@ fun CitizenHomeScreen(
                                     }
                                     else -> {
                                         Text(
-                                            text = "Πατήστε ανανέωση για στίγμα GPS",
+                                            text = stringResource(R.string.location_tap_refresh),
                                             style = MaterialTheme.typography.bodySmall
                                         )
                                     }
@@ -326,7 +328,7 @@ fun CitizenHomeScreen(
                             ) {
                                 Icon(
                                     Icons.Default.Refresh,
-                                    contentDescription = "Ανανέωση τοποθεσίας",
+                                    contentDescription = stringResource(R.string.location_retry),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
@@ -372,7 +374,7 @@ fun CitizenHomeScreen(
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "Υποβολή με GPS",
+                                text = stringResource(R.string.btn_submit_gps),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -410,7 +412,7 @@ fun CitizenHomeScreen(
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "Ιστορικό & Στοιχεία",
+                                text = stringResource(R.string.stats_history_quick),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -479,7 +481,7 @@ fun CitizenHomeScreen(
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "Ενεργοποιήστε την τοποθεσία GPS για να βλέπετε προβλήματα μετακίνησης γύρω σας σε πραγματικό χρόνο.",
+                                    text = stringResource(R.string.gps_enable_prompt),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -491,7 +493,7 @@ fun CitizenHomeScreen(
                                     )
                                     permissionsLauncher.launch(needed.toTypedArray())
                                 }) {
-                                    Text("Ενεργοποίηση Τοποθεσίας")
+                                    Text(stringResource(R.string.btn_enable_location))
                                 }
                             }
                         }
@@ -538,7 +540,7 @@ fun CitizenHomeScreen(
                                         fontWeight = FontWeight.Medium
                                     )
                                     Text(
-                                        text = "Η περιοχή σας είναι ελεύθερη από καταγεγραμμένα εμπόδια.",
+                                        text = stringResource(R.string.no_nearby_obstacles),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -574,7 +576,7 @@ fun CitizenHomeScreen(
                     if (bitmap != null) {
                         Image(
                             bitmap = bitmap.asImageBitmap(),
-                            contentDescription = "Φωτογραφία συμβάντος",
+                            contentDescription = stringResource(R.string.incident_photo),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(300.dp)
@@ -587,7 +589,7 @@ fun CitizenHomeScreen(
                         onClick = { selectedImageForDialog = null },
                         modifier = Modifier.align(Alignment.End)
                     ) {
-                        Text("Κλείσιμο")
+                        Text(stringResource(R.string.close))
                     }
                 }
             }
@@ -678,7 +680,7 @@ fun NearbyAlertCard(
                     color = MaterialTheme.colorScheme.errorContainer
                 ) {
                     Text(
-                        text = "$distanceFormatted μακριά",
+                        text = stringResource(R.string.distance_away, distanceFormatted),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onErrorContainer,
@@ -708,7 +710,7 @@ fun NearbyAlertCard(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Οδηγία: $practicalAdvice",
+                            text = stringResource(R.string.advice_prefix, practicalAdvice),
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onTertiaryContainer
@@ -721,7 +723,7 @@ fun NearbyAlertCard(
             // Description
             if (report.description.isNotBlank()) {
                 Text(
-                    text = "Σχόλια: ${report.description}",
+                    text = "${stringResource(R.string.description_label)}: ${report.description}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -780,7 +782,7 @@ fun NearbyAlertCard(
                     Spacer(modifier = Modifier.height(10.dp))
                     Image(
                         bitmap = bitmap.asImageBitmap(),
-                        contentDescription = "Φωτογραφία συμβάντος",
+                        contentDescription = stringResource(R.string.incident_photo),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(140.dp)

@@ -126,4 +126,29 @@
     <string name="admin_view_employee_dashboard">Προβολή Πίνακα Ελέγχου Υπαλλήλου</string>
     <string name="admin_switch_to_admin">Ρυθμίσεις Διαχειριστή</string>
     <string name="admin_category_radii_title">Προεπιλεγμένες Ακτίνες Ειδοποίησης</string>
+
+    <!-- Additional UI Strings -->
+    <string name="welcome_user">Καλώς ήρθατε, %1$s!</string>
+    <string name="role_label">Ρόλος: %1$s</string>
+    <string name="location_unknown">Άγνωστη τοποθεσία</string>
+    <string name="location_tap_refresh">Πατήστε ανανέωση για στίγμα GPS</string>
+    <string name="btn_submit_gps">Υποβολή με GPS</string>
+    <string name="stats_history_quick">Ιστορικό &amp; Στοιχεία</string>
+    <string name="gps_enable_prompt">Ενεργοποιήστε την τοποθεσία GPS για να βλέπετε προβλήματα μετακίνησης γύρω σας σε πραγματικό χρόνο.</string>
+    <string name="btn_enable_location">Ενεργοποίηση Τοποθεσίας</string>
+    <string name="no_nearby_obstacles">Η περιοχή σας είναι ελεύθερη από καταγεγραμμένα εμπόδια.</string>
+    <string name="incident_photo">Φωτογραφία συμβάντος</string>
+    <string name="close">Κλείσιμο</string>
+    <string name="reports_count">%1$d αναφορές</string>
+    <string name="incidents_count">%1$d συμβάντα</string>
+    <string name="verify_report_title">Επικύρωση Αναφοράς</string>
+    <string name="verify_incident_prompt">Επικύρωση του συμβάντος: \"%1$s\"</string>
+    <string name="verify_advice_desc">Ορίστε ή προσαρμόστε την πρακτική οδηγία που θα βλέπουν οι πολίτες στις ειδοποιήσεις:</string>
+    <string name="admin_logged_in">Συνδεδεμένος: %1$s</string>
+    <string name="admin_review_reports_desc">Έλεγχος και επικύρωση όλων των υποβληθέντων αναφορών</string>
+    <string name="admin_stats_desc">Προβολή δεικτών, κατανομής κατηγοριών και ποσοστού επίλυσης</string>
+    <string name="category_severity_and_advice">Σοβαρότητα: %1$d/5 • Οδηγία: %2$s</string>
+    <string name="error_gps_needed_submission">Απαιτείται λήψη τοποθεσίας GPS πριν την υποβολή.</string>
+    <string name="location_permission_denied">Η πρόσβαση στην τοποθεσία απορρίφθηκε.</string>
+    <string name="location_gps_failed">Δεν ήταν δυνατή η ανάκτηση στίγματος GPS.</string>
 </resources>

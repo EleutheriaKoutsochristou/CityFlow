@@ -6,6 +6,7 @@ import com.example.cityflow.data.model.Report
 import com.example.cityflow.data.model.ReportStatus
 import com.example.cityflow.data.model.Resource
 import com.example.cityflow.data.repository.ReportRepository
+import com.example.cityflow.util.AppSettings
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -109,14 +110,27 @@ class EmployeeDashboardViewModel(
 
             _actionState.value = when (result) {
                 is Resource.Success -> {
-                    val statusText = when (newStatus) {
-                        ReportStatus.VERIFIED -> "επικυρώθηκε"
-                        ReportStatus.IN_PROGRESS -> "τέθηκε σε εξέλιξη"
-                        ReportStatus.RESOLVED -> "επιλύθηκε"
-                        ReportStatus.REJECTED -> "απορρίφθηκε"
-                        else -> "ενημερώθηκε"
+                    val isEn = AppSettings.currentLanguage.value == "en"
+                    val msg = if (isEn) {
+                        val statusText = when (newStatus) {
+                            ReportStatus.VERIFIED -> "verified"
+                            ReportStatus.IN_PROGRESS -> "marked in progress"
+                            ReportStatus.RESOLVED -> "resolved"
+                            ReportStatus.REJECTED -> "rejected"
+                            else -> "updated"
+                        }
+                        "Report $statusText successfully."
+                    } else {
+                        val statusText = when (newStatus) {
+                            ReportStatus.VERIFIED -> "επικυρώθηκε"
+                            ReportStatus.IN_PROGRESS -> "τέθηκε σε εξέλιξη"
+                            ReportStatus.RESOLVED -> "επιλύθηκε"
+                            ReportStatus.REJECTED -> "απορρίφθηκε"
+                            else -> "ενημερώθηκε"
+                        }
+                        "Η αναφορά $statusText επιτυχώς."
                     }
-                    Resource.Success("Η αναφορά $statusText επιτυχώς.")
+                    Resource.Success(msg)
                 }
                 is Resource.Error -> Resource.Error(result.message)
                 else -> Resource.Idle
