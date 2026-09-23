@@ -51,6 +51,8 @@
     <string name="btn_submit_report">Submit Report</string>
     <string name="report_submitting">Submitting report…</string>
     <string name="report_submit_success">Report submitted successfully!</string>
+    <string name="no_internet_connection">No active internet connection.</string>
+    <string name="description_required">Please enter a brief description of the issue.</string>
 
     <!-- Employee Actions -->
     <string name="employee_dashboard_title">Incident Management Dashboard</string>
@@ -59,8 +61,10 @@
     <string name="similar_reports_count">Similar reports in area: %1$d</string>
     <string name="btn_verify">Verify</string>
     <string name="btn_reject">Reject</string>
+    <string name="btn_under_review">Under Review</string>
     <string name="btn_in_progress">In Progress</string>
     <string name="btn_resolve">Resolve</string>
+    <string name="btn_reopen">Reopen</string>
     <string name="status_label">Status: %1$s</string>
     <string name="advice_label">Practical Advice</string>
     <string name="action_success">Status updated successfully.</string>

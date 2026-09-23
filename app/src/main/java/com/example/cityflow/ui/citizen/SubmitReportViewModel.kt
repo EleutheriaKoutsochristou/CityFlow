@@ -95,17 +95,37 @@ class SubmitReportViewModel(
     }
 
     /**
-     * Υποβολή της αναφοράς στο Firestore.
+     * Υποβολή της αναφοράς στο Firestore με προληπτικούς ελέγχους εγκυρότητας.
      */
-    fun submitReport(userId: String, userEmail: String) {
+    fun submitReport(userId: String, userEmail: String, isNetworkAvailable: Boolean = true) {
+        val isEn = AppSettings.currentLanguage.value == "en"
+
+        // 1. Προληπτικός έλεγχος σύνδεσης στο διαδίκτυο
+        if (!isNetworkAvailable) {
+            _submitState.value = Resource.Error(
+                if (isEn) "No active internet connection. Please check your network."
+                else "Δεν υπάρχει ενεργή σύνδεση στο διαδίκτυο. Παρακαλώ ελέγξτε τη σύνδεσή σας."
+            )
+            return
+        }
+
+        // 2. Έλεγχος τοποθεσίας GPS
         val lat = _latitude.value
         val lon = _longitude.value
-
         if (lat == null || lon == null) {
-            val isEn = AppSettings.currentLanguage.value == "en"
             _submitState.value = Resource.Error(
                 if (isEn) "GPS location required before submission."
                 else "Απαιτείται λήψη τοποθεσίας GPS πριν την υποβολή."
+            )
+            return
+        }
+
+        // 3. Έλεγχος υποχρεωτικής περιγραφής
+        val trimmedDesc = _description.value.trim()
+        if (trimmedDesc.isBlank()) {
+            _submitState.value = Resource.Error(
+                if (isEn) "Please enter a brief description of the issue."
+                else "Παρακαλώ πληκτρολογήστε μια σύντομη περιγραφή του προβλήματος."
             )
             return
         }

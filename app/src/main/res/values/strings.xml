@@ -51,6 +51,8 @@
     <string name="btn_submit_report">Υποβολή Αναφοράς</string>
     <string name="report_submitting">Αποστολή αναφοράς…</string>
     <string name="report_submit_success">Η αναφορά υποβλήθηκε επιτυχώς!</string>
+    <string name="no_internet_connection">Δεν υπάρχει ενεργή σύνδεση στο διαδίκτυο.</string>
+    <string name="description_required">Παρακαλώ πληκτρολογήστε μια σύντομη περιγραφή του προβλήματος.</string>
 
     <!-- Employee Actions -->
     <string name="employee_dashboard_title">Πίνακας Ελέγχου Αναφορών</string>
@@ -59,8 +61,10 @@
     <string name="similar_reports_count">Παρόμοιες αναφορές στην περιοχή: %1$d</string>
     <string name="btn_verify">Επικύρωση</string>
     <string name="btn_reject">Απόρριψη</string>
+    <string name="btn_under_review">Υπό Διερεύνηση</string>
     <string name="btn_in_progress">Σε Εξέλιξη</string>
     <string name="btn_resolve">Επίλυση</string>
+    <string name="btn_reopen">Επανεξέταση</string>
     <string name="status_label">Κατάσταση: %1$s</string>
     <string name="advice_label">Πρακτική Οδηγία</string>
     <string name="action_success">Η κατάσταση ενημερώθηκε επιτυχώς.</string>

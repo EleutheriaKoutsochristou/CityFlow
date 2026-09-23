@@ -50,7 +50,9 @@ class EmployeeDashboardViewModel(
     ) { reports, filter, sort ->
         val filtered = when (filter) {
             EmployeeReportFilter.ALL -> reports
-            EmployeeReportFilter.PENDING -> reports.filter { it.status == ReportStatus.SUBMITTED.name }
+            EmployeeReportFilter.PENDING -> reports.filter {
+                it.status == ReportStatus.SUBMITTED.name || it.status == ReportStatus.UNDER_REVIEW.name
+            }
             EmployeeReportFilter.ACTIVE -> reports.filter {
                 it.status == ReportStatus.VERIFIED.name || it.status == ReportStatus.IN_PROGRESS.name
             }
@@ -117,7 +119,8 @@ class EmployeeDashboardViewModel(
                             ReportStatus.IN_PROGRESS -> "marked in progress"
                             ReportStatus.RESOLVED -> "resolved"
                             ReportStatus.REJECTED -> "rejected"
-                            else -> "updated"
+                            ReportStatus.UNDER_REVIEW -> "marked under review"
+                            ReportStatus.SUBMITTED -> "reset to submitted"
                         }
                         "Report $statusText successfully."
                     } else {
@@ -126,7 +129,8 @@ class EmployeeDashboardViewModel(
                             ReportStatus.IN_PROGRESS -> "τέθηκε σε εξέλιξη"
                             ReportStatus.RESOLVED -> "επιλύθηκε"
                             ReportStatus.REJECTED -> "απορρίφθηκε"
-                            else -> "ενημερώθηκε"
+                            ReportStatus.UNDER_REVIEW -> "τέθηκε υπό διερεύνηση"
+                            ReportStatus.SUBMITTED -> "επαναφέρθηκε σε κατάσταση υποβολής"
                         }
                         "Η αναφορά $statusText επιτυχώς."
                     }

@@ -298,6 +298,13 @@ fun EmployeeDashboardScreen(
                                     report.reportCategory.getDefaultAdvice(AppSettings.currentLanguage.value)
                                 }
                             },
+                            onSetUnderReview = {
+                                viewModel.updateStatus(
+                                    reportId = report.id,
+                                    newStatus = ReportStatus.UNDER_REVIEW,
+                                    verifiedBy = employeeIdentifier
+                                )
+                            },
                             onSetInProgress = {
                                 viewModel.updateStatus(
                                     reportId = report.id,
@@ -398,6 +405,7 @@ fun EmployeeDashboardScreen(
 fun ReportEmployeeCard(
     report: Report,
     onVerify: () -> Unit,
+    onSetUnderReview: () -> Unit,
     onSetInProgress: () -> Unit,
     onResolve: () -> Unit,
     onReject: () -> Unit
@@ -609,8 +617,10 @@ fun ReportEmployeeCard(
 
             // Κουμπιά Ενεργειών (Employee Actions)
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 when (status) {
@@ -626,7 +636,51 @@ fun ReportEmployeeCard(
                             Text(stringResource(R.string.btn_reject))
                         }
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                        OutlinedButton(
+                            onClick = onSetUnderReview,
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color(0xFF1565C0)
+                            )
+                        ) {
+                            Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(R.string.btn_under_review))
+                        }
+
+                        Button(
+                            onClick = onVerify,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(R.string.btn_verify))
+                        }
+                    }
+
+                    ReportStatus.UNDER_REVIEW -> {
+                        OutlinedButton(
+                            onClick = onReject,
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(R.string.btn_reject))
+                        }
+
+                        Button(
+                            onClick = onSetInProgress,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFF57C00) // Orange
+                            )
+                        ) {
+                            Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(R.string.btn_in_progress))
+                        }
 
                         Button(
                             onClick = onVerify,
@@ -650,7 +704,14 @@ fun ReportEmployeeCard(
                             Text(stringResource(R.string.btn_reject))
                         }
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                        OutlinedButton(
+                            onClick = onSetUnderReview,
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color(0xFF1565C0)
+                            )
+                        ) {
+                            Text(stringResource(R.string.btn_under_review))
+                        }
 
                         Button(
                             onClick = onSetInProgress,
@@ -662,8 +723,6 @@ fun ReportEmployeeCard(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(stringResource(R.string.btn_in_progress))
                         }
-
-                        Spacer(modifier = Modifier.width(8.dp))
 
                         Button(
                             onClick = onResolve,
@@ -678,6 +737,15 @@ fun ReportEmployeeCard(
                     }
 
                     ReportStatus.IN_PROGRESS -> {
+                        OutlinedButton(
+                            onClick = onSetUnderReview,
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color(0xFF1565C0)
+                            )
+                        ) {
+                            Text(stringResource(R.string.btn_under_review))
+                        }
+
                         Button(
                             onClick = onResolve,
                             colors = ButtonDefaults.buttonColors(
@@ -687,6 +755,15 @@ fun ReportEmployeeCard(
                             Icon(Icons.Default.DoneAll, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(stringResource(R.string.btn_resolve))
+                        }
+
+                        OutlinedButton(
+                            onClick = onReject,
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text(stringResource(R.string.btn_reject))
                         }
                     }
 
@@ -703,6 +780,28 @@ fun ReportEmployeeCard(
                             },
                             label = { Text(ReportStatus.RESOLVED.localizedTitle) }
                         )
+
+                        OutlinedButton(
+                            onClick = onSetInProgress,
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color(0xFFF57C00)
+                            )
+                        ) {
+                            Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(R.string.btn_in_progress))
+                        }
+
+                        OutlinedButton(
+                            onClick = onSetUnderReview,
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color(0xFF1565C0)
+                            )
+                        ) {
+                            Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(R.string.btn_under_review))
+                        }
                     }
 
                     ReportStatus.REJECTED -> {
@@ -718,6 +817,28 @@ fun ReportEmployeeCard(
                             },
                             label = { Text(ReportStatus.REJECTED.localizedTitle) }
                         )
+
+                        OutlinedButton(
+                            onClick = onSetUnderReview,
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color(0xFF1565C0)
+                            )
+                        ) {
+                            Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(R.string.btn_under_review))
+                        }
+
+                        Button(
+                            onClick = onVerify,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(R.string.btn_verify))
+                        }
                     }
 
                     else -> Unit

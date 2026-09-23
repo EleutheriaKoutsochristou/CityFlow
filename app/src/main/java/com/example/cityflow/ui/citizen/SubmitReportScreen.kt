@@ -44,6 +44,7 @@ import com.example.cityflow.data.model.Resource
 import com.example.cityflow.data.model.User
 import com.example.cityflow.ui.common.localizedTitle
 import com.example.cityflow.util.ImageUtils
+import com.example.cityflow.util.NetworkUtils
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
@@ -367,7 +368,7 @@ fun SubmitReportScreen(
 
             // 2. Περιγραφή / Σχόλια
             Text(
-                text = stringResource(R.string.description_label),
+                text = "${stringResource(R.string.description_label)} *",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -584,13 +585,14 @@ fun SubmitReportScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             // 5. Κουμπί Υποβολής & Εμφάνιση Snackbar Επιβεβαίωσης
-            val canSubmit = latitude != null && longitude != null && submitState !is Resource.Loading
+            val canSubmit = latitude != null && longitude != null && description.trim().isNotBlank() && submitState !is Resource.Loading
 
             Button(
                 onClick = {
                     val userId = currentUser?.id.orEmpty().ifBlank { "citizen_local" }
                     val userEmail = currentUser?.email.orEmpty().ifBlank { "citizen@cityflow.local" }
-                    viewModel.submitReport(userId, userEmail)
+                    val isOnline = NetworkUtils.isNetworkAvailable(context)
+                    viewModel.submitReport(userId, userEmail, isOnline)
                 },
                 enabled = canSubmit,
                 modifier = Modifier
