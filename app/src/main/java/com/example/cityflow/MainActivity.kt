@@ -2,6 +2,7 @@ package com.example.cityflow
 
 import android.content.res.Configuration
 import android.os.Bundle
+import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -45,7 +46,8 @@ class MainActivity : AppCompatActivity() {
 
             CompositionLocalProvider(
                 LocalConfiguration provides updatedConfig,
-                LocalContext provides updatedContext
+                LocalContext provides updatedContext,
+                LocalActivityResultRegistryOwner provides this
             ) {
                 CityFlowTheme(darkTheme = useDarkTheme) {
                     Surface(
