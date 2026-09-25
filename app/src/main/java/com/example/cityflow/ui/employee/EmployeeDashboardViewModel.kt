@@ -12,10 +12,12 @@ import kotlinx.coroutines.launch
 
 enum class EmployeeReportFilter {
     ALL,
-    PENDING,        // SUBMITTED
-    UNDER_REVIEW,   // UNDER_REVIEW
-    ACTIVE,         // VERIFIED, IN_PROGRESS
-    RESOLVED        // RESOLVED, REJECTED
+    SUBMITTED,
+    UNDER_REVIEW,
+    VERIFIED,
+    IN_PROGRESS,
+    RESOLVED,
+    REJECTED
 }
 
 enum class EmployeeReportSort {
@@ -51,17 +53,23 @@ class EmployeeDashboardViewModel(
     ) { reports, filter, sort ->
         val filtered = when (filter) {
             EmployeeReportFilter.ALL -> reports
-            EmployeeReportFilter.PENDING -> reports.filter {
+            EmployeeReportFilter.SUBMITTED -> reports.filter {
                 it.status == ReportStatus.SUBMITTED.name
             }
             EmployeeReportFilter.UNDER_REVIEW -> reports.filter {
                 it.status == ReportStatus.UNDER_REVIEW.name
             }
-            EmployeeReportFilter.ACTIVE -> reports.filter {
-                it.status == ReportStatus.VERIFIED.name || it.status == ReportStatus.IN_PROGRESS.name
+            EmployeeReportFilter.VERIFIED -> reports.filter {
+                it.status == ReportStatus.VERIFIED.name
+            }
+            EmployeeReportFilter.IN_PROGRESS -> reports.filter {
+                it.status == ReportStatus.IN_PROGRESS.name
             }
             EmployeeReportFilter.RESOLVED -> reports.filter {
-                it.status == ReportStatus.RESOLVED.name || it.status == ReportStatus.REJECTED.name
+                it.status == ReportStatus.RESOLVED.name
+            }
+            EmployeeReportFilter.REJECTED -> reports.filter {
+                it.status == ReportStatus.REJECTED.name
             }
         }
 

@@ -208,24 +208,34 @@ fun EmployeeDashboardScreen(
                     label = { Text(stringResource(R.string.filter_all)) }
                 )
                 FilterChip(
-                    selected = selectedFilter == EmployeeReportFilter.PENDING,
-                    onClick = { viewModel.setFilter(EmployeeReportFilter.PENDING) },
-                    label = { Text(stringResource(R.string.filter_submitted)) }
+                    selected = selectedFilter == EmployeeReportFilter.SUBMITTED,
+                    onClick = { viewModel.setFilter(EmployeeReportFilter.SUBMITTED) },
+                    label = { Text(ReportStatus.SUBMITTED.localizedTitle) }
                 )
                 FilterChip(
                     selected = selectedFilter == EmployeeReportFilter.UNDER_REVIEW,
                     onClick = { viewModel.setFilter(EmployeeReportFilter.UNDER_REVIEW) },
-                    label = { Text(stringResource(R.string.filter_under_review)) }
+                    label = { Text(ReportStatus.UNDER_REVIEW.localizedTitle) }
                 )
                 FilterChip(
-                    selected = selectedFilter == EmployeeReportFilter.ACTIVE,
-                    onClick = { viewModel.setFilter(EmployeeReportFilter.ACTIVE) },
-                    label = { Text(stringResource(R.string.filter_active)) }
+                    selected = selectedFilter == EmployeeReportFilter.VERIFIED,
+                    onClick = { viewModel.setFilter(EmployeeReportFilter.VERIFIED) },
+                    label = { Text(ReportStatus.VERIFIED.localizedTitle) }
+                )
+                FilterChip(
+                    selected = selectedFilter == EmployeeReportFilter.IN_PROGRESS,
+                    onClick = { viewModel.setFilter(EmployeeReportFilter.IN_PROGRESS) },
+                    label = { Text(ReportStatus.IN_PROGRESS.localizedTitle) }
                 )
                 FilterChip(
                     selected = selectedFilter == EmployeeReportFilter.RESOLVED,
                     onClick = { viewModel.setFilter(EmployeeReportFilter.RESOLVED) },
-                    label = { Text(stringResource(R.string.filter_resolved)) }
+                    label = { Text(ReportStatus.RESOLVED.localizedTitle) }
+                )
+                FilterChip(
+                    selected = selectedFilter == EmployeeReportFilter.REJECTED,
+                    onClick = { viewModel.setFilter(EmployeeReportFilter.REJECTED) },
+                    label = { Text(ReportStatus.REJECTED.localizedTitle) }
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -682,15 +692,6 @@ fun ReportEmployeeCard(
                     }
 
                     ReportStatus.VERIFIED -> {
-                        OutlinedButton(
-                            onClick = onReject,
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.error
-                            )
-                        ) {
-                            Text(stringResource(R.string.btn_reject))
-                        }
-
                         Button(
                             onClick = onSetInProgress,
                             colors = ButtonDefaults.buttonColors(
@@ -701,29 +702,9 @@ fun ReportEmployeeCard(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(stringResource(R.string.btn_in_progress))
                         }
-
-                        Button(
-                            onClick = onResolve,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF2E7D32) // Dark Green
-                            )
-                        ) {
-                            Icon(Icons.Default.DoneAll, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(stringResource(R.string.btn_resolve))
-                        }
                     }
 
                     ReportStatus.IN_PROGRESS -> {
-                        OutlinedButton(
-                            onClick = onSetUnderReview,
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = Color(0xFF1565C0)
-                            )
-                        ) {
-                            Text(stringResource(R.string.btn_under_review))
-                        }
-
                         Button(
                             onClick = onResolve,
                             colors = ButtonDefaults.buttonColors(
@@ -749,17 +730,6 @@ fun ReportEmployeeCard(
                             },
                             label = { Text(ReportStatus.RESOLVED.localizedTitle) }
                         )
-
-                        OutlinedButton(
-                            onClick = onSetUnderReview,
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = Color(0xFF1565C0)
-                            )
-                        ) {
-                            Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(stringResource(R.string.btn_reopen))
-                        }
                     }
 
                     ReportStatus.REJECTED -> {
@@ -775,17 +745,6 @@ fun ReportEmployeeCard(
                             },
                             label = { Text(ReportStatus.REJECTED.localizedTitle) }
                         )
-
-                        OutlinedButton(
-                            onClick = onSetUnderReview,
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = Color(0xFF1565C0)
-                            )
-                        ) {
-                            Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(stringResource(R.string.btn_reopen))
-                        }
                     }
 
                     else -> Unit

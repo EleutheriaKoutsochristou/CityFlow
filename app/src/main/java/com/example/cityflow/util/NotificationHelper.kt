@@ -15,6 +15,8 @@ import com.example.cityflow.MainActivity
 import com.example.cityflow.R
 import com.example.cityflow.data.model.Report
 import com.example.cityflow.domain.DistanceCalculator
+import com.example.cityflow.ui.common.getLocalizedAdvice
+import com.example.cityflow.ui.common.getLocalizedDescription
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -102,14 +104,11 @@ object NotificationHelper {
         val currentLang = AppSettings.currentLanguage.value
         val isEn = currentLang == "en"
         val categoryTitle = report.reportCategory.getTitle(currentLang)
-        val advice = if (report.practicalAdvice.isNotBlank()) {
-            report.practicalAdvice
-        } else {
-            report.reportCategory.getDefaultAdvice(currentLang)
-        }
+        val advice = report.getLocalizedAdvice(currentLang)
+        val description = report.getLocalizedDescription(currentLang)
 
         val title = "⚠️ $categoryTitle ($formattedDistance)"
-        val shortText = if (advice.isNotBlank()) "${if (isEn) "Advice" else "Οδηγία"}: $advice" else report.description
+        val shortText = if (advice.isNotBlank()) "${if (isEn) "Advice" else "Οδηγία"}: $advice" else description
 
         val bigText = buildString {
             append(if (isEn) "Distance: $formattedDistance" else "Απόσταση: $formattedDistance")
@@ -119,8 +118,8 @@ object NotificationHelper {
             if (advice.isNotBlank()) {
                 append(if (isEn) "\n💡 Advice: $advice" else "\n💡 Οδηγία: $advice")
             }
-            if (report.description.isNotBlank()) {
-                append(if (isEn) "\nDescription: ${report.description}" else "\nΠεριγραφή: ${report.description}")
+            if (description.isNotBlank()) {
+                append(if (isEn) "\nDescription: $description" else "\nΠεριγραφή: $description")
             }
         }
 
