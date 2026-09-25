@@ -69,6 +69,8 @@
     <string name="advice_label">Practical Advice</string>
     <string name="action_success">Status updated successfully.</string>
     <string name="filter_all">All</string>
+    <string name="filter_submitted">Submitted</string>
+    <string name="filter_under_review">Under Review</string>
     <string name="filter_pending">Pending</string>
     <string name="filter_active">Active</string>
     <string name="filter_resolved">Resolved</string>

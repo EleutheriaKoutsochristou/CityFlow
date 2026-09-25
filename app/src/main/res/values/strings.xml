@@ -69,6 +69,8 @@
     <string name="advice_label">Πρακτική Οδηγία</string>
     <string name="action_success">Η κατάσταση ενημερώθηκε επιτυχώς.</string>
     <string name="filter_all">Όλες</string>
+    <string name="filter_submitted">Υποβληθείσες</string>
+    <string name="filter_under_review">Υπό Διερεύνηση</string>
     <string name="filter_pending">Προς Έλεγχο</string>
     <string name="filter_active">Ενεργές</string>
     <string name="filter_resolved">Επιλυμένες</string>

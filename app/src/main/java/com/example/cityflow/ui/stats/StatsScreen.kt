@@ -38,6 +38,8 @@ import com.example.cityflow.data.model.ReportStatus
 import com.example.cityflow.data.model.User
 import com.example.cityflow.ui.common.SettingsDialog
 import com.example.cityflow.ui.common.localizedTitle
+import com.example.cityflow.ui.common.localizedAdvice
+import com.example.cityflow.ui.common.localizedDescription
 import com.example.cityflow.util.ImageUtils
 import com.example.cityflow.util.MapUtils
 import java.text.SimpleDateFormat
@@ -480,7 +482,7 @@ private fun KpiStatCard(
     modifier: Modifier = Modifier
 ) {
     ElevatedCard(
-        modifier = modifier,
+        modifier = modifier.height(136.dp),
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -488,9 +490,9 @@ private fun KpiStatCard(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
             Box(
                 modifier = Modifier
@@ -802,7 +804,8 @@ private fun UserReportHistoryCard(
                 }
             }
 
-            if (report.description.isNotBlank()) {
+            val descriptionText = report.localizedDescription
+            if (descriptionText.isNotBlank()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -820,7 +823,7 @@ private fun UserReportHistoryCard(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = report.description,
+                        text = descriptionText,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -839,7 +842,8 @@ private fun UserReportHistoryCard(
                 )
             }
 
-            if (report.practicalAdvice.isNotBlank()) {
+            val adviceText = report.localizedAdvice
+            if (adviceText.isNotBlank()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -858,7 +862,7 @@ private fun UserReportHistoryCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = report.practicalAdvice,
+                        text = adviceText,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }

@@ -33,6 +33,8 @@ import com.example.cityflow.data.model.User
 import com.example.cityflow.domain.PriorityCalculator
 import com.example.cityflow.ui.common.SettingsDialog
 import com.example.cityflow.ui.common.localizedTitle
+import com.example.cityflow.ui.common.localizedAdvice
+import com.example.cityflow.ui.common.localizedDescription
 import com.example.cityflow.util.AppSettings
 import com.example.cityflow.util.ImageUtils
 import com.example.cityflow.util.MapUtils
@@ -208,7 +210,12 @@ fun EmployeeDashboardScreen(
                 FilterChip(
                     selected = selectedFilter == EmployeeReportFilter.PENDING,
                     onClick = { viewModel.setFilter(EmployeeReportFilter.PENDING) },
-                    label = { Text(stringResource(R.string.filter_pending)) }
+                    label = { Text(stringResource(R.string.filter_submitted)) }
+                )
+                FilterChip(
+                    selected = selectedFilter == EmployeeReportFilter.UNDER_REVIEW,
+                    onClick = { viewModel.setFilter(EmployeeReportFilter.UNDER_REVIEW) },
+                    label = { Text(stringResource(R.string.filter_under_review)) }
                 )
                 FilterChip(
                     selected = selectedFilter == EmployeeReportFilter.ACTIVE,
@@ -549,7 +556,8 @@ fun ReportEmployeeCard(
             }
 
             // Περιγραφή χρήστη
-            if (report.description.isNotBlank()) {
+            val descriptionText = report.localizedDescription
+            if (descriptionText.isNotBlank()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -567,7 +575,7 @@ fun ReportEmployeeCard(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = report.description,
+                        text = descriptionText,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -587,7 +595,8 @@ fun ReportEmployeeCard(
             }
 
             // Πρακτική Οδηγία
-            if (report.practicalAdvice.isNotBlank()) {
+            val adviceText = report.localizedAdvice
+            if (adviceText.isNotBlank()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -606,7 +615,7 @@ fun ReportEmployeeCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stringResource(R.string.advice_prefix, report.practicalAdvice),
+                        text = stringResource(R.string.advice_prefix, adviceText),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -636,26 +645,15 @@ fun ReportEmployeeCard(
                             Text(stringResource(R.string.btn_reject))
                         }
 
-                        OutlinedButton(
+                        Button(
                             onClick = onSetUnderReview,
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = Color(0xFF1565C0)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF1565C0)
                             )
                         ) {
                             Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(stringResource(R.string.btn_under_review))
-                        }
-
-                        Button(
-                            onClick = onVerify,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
-                            )
-                        ) {
-                            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(stringResource(R.string.btn_verify))
                         }
                     }
 
@@ -669,17 +667,6 @@ fun ReportEmployeeCard(
                             Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(stringResource(R.string.btn_reject))
-                        }
-
-                        Button(
-                            onClick = onSetInProgress,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFF57C00) // Orange
-                            )
-                        ) {
-                            Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(stringResource(R.string.btn_in_progress))
                         }
 
                         Button(
@@ -702,15 +689,6 @@ fun ReportEmployeeCard(
                             )
                         ) {
                             Text(stringResource(R.string.btn_reject))
-                        }
-
-                        OutlinedButton(
-                            onClick = onSetUnderReview,
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = Color(0xFF1565C0)
-                            )
-                        ) {
-                            Text(stringResource(R.string.btn_under_review))
                         }
 
                         Button(
@@ -756,15 +734,6 @@ fun ReportEmployeeCard(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(stringResource(R.string.btn_resolve))
                         }
-
-                        OutlinedButton(
-                            onClick = onReject,
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.error
-                            )
-                        ) {
-                            Text(stringResource(R.string.btn_reject))
-                        }
                     }
 
                     ReportStatus.RESOLVED -> {
@@ -782,25 +751,14 @@ fun ReportEmployeeCard(
                         )
 
                         OutlinedButton(
-                            onClick = onSetInProgress,
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = Color(0xFFF57C00)
-                            )
-                        ) {
-                            Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(stringResource(R.string.btn_in_progress))
-                        }
-
-                        OutlinedButton(
                             onClick = onSetUnderReview,
                             colors = ButtonDefaults.outlinedButtonColors(
                                 contentColor = Color(0xFF1565C0)
                             )
                         ) {
-                            Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(stringResource(R.string.btn_under_review))
+                            Text(stringResource(R.string.btn_reopen))
                         }
                     }
 
@@ -824,20 +782,9 @@ fun ReportEmployeeCard(
                                 contentColor = Color(0xFF1565C0)
                             )
                         ) {
-                            Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(stringResource(R.string.btn_under_review))
-                        }
-
-                        Button(
-                            onClick = onVerify,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
-                            )
-                        ) {
-                            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(stringResource(R.string.btn_verify))
+                            Text(stringResource(R.string.btn_reopen))
                         }
                     }
 

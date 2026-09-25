@@ -46,6 +46,7 @@ import com.example.cityflow.domain.DistanceCalculator
 import com.example.cityflow.ui.common.SettingsDialog
 import com.example.cityflow.ui.common.localizedTitle
 import com.example.cityflow.ui.common.localizedAdvice
+import com.example.cityflow.ui.common.localizedDescription
 import com.example.cityflow.util.ImageUtils
 import com.example.cityflow.util.MapUtils
 import com.example.cityflow.util.NotificationHelper
@@ -622,11 +623,8 @@ fun NearbyAlertCard(
     val category = report.reportCategory
     val categoryTitle = category.localizedTitle
 
-    val practicalAdvice = if (report.practicalAdvice.isNotBlank()) {
-        report.practicalAdvice
-    } else {
-        category.localizedAdvice
-    }
+    val practicalAdvice = report.localizedAdvice
+    val descriptionText = report.localizedDescription
 
     val dateFormatter = remember {
         SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
@@ -721,9 +719,9 @@ fun NearbyAlertCard(
             }
 
             // Description
-            if (report.description.isNotBlank()) {
+            if (descriptionText.isNotBlank()) {
                 Text(
-                    text = "${stringResource(R.string.description_label)}: ${report.description}",
+                    text = "${stringResource(R.string.description_label)}: $descriptionText",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
