@@ -122,6 +122,40 @@ class AuthViewModel(
     }
 
     /**
+     * Ενημέρωση προφίλ χρήστη.
+     */
+    fun updateProfile(fullName: String, onResult: ((Resource<User>) -> Unit)? = null) {
+        val isEn = AppSettings.currentLanguage.value == "en"
+        val trimmedName = fullName.trim()
+        if (trimmedName.isBlank()) {
+            val err = Resource.Error(if (isEn) "Please enter a valid full name." else "Παρακαλώ εισάγετε ένα έγκυρο ονοματεπώνυμο.")
+            onResult?.invoke(err)
+            return
+        }
+
+        val current = _currentUser.value
+        if (current?.id == "hardcoded_admin" || current?.id == "hardcoded_employee" || repository.currentUserId == null) {
+            val updated = current?.copy(fullName = trimmedName) ?: User(
+                id = "mock_user",
+                email = "user@cityflow.local",
+                fullName = trimmedName,
+                role = UserRole.CITIZEN.name
+            )
+            _currentUser.value = updated
+            onResult?.invoke(Resource.Success(updated))
+            return
+        }
+
+        viewModelScope.launch {
+            val result = repository.updateUserProfile(trimmedName)
+            if (result is Resource.Success) {
+                _currentUser.value = result.data
+            }
+            onResult?.invoke(result)
+        }
+    }
+
+    /**
      * Αποσύνδεση χρήστη.
      */
     fun logout() {

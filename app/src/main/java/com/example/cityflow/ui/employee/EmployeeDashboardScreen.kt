@@ -55,6 +55,7 @@ fun EmployeeDashboardScreen(
     currentUser: User?,
     onNavigateToAdmin: (() -> Unit)? = null,
     onNavigateToStats: (() -> Unit)? = null,
+    onNavigateToProfile: (() -> Unit)? = null,
     onLogout: () -> Unit,
     viewModel: EmployeeDashboardViewModel = viewModel()
 ) {
@@ -70,6 +71,15 @@ fun EmployeeDashboardScreen(
     // Dialog state για προαιρετική επεξεργασία οδηγίας κατά την επικύρωση
     var reportToVerify by remember { mutableStateOf<Report?>(null) }
     var verifyAdviceText by remember { mutableStateOf("") }
+
+    // Dialog state για αιτιολογία κατά την απόρριψη
+    var reportToReject by remember { mutableStateOf<Report?>(null) }
+    var rejectionReasonText by remember { mutableStateOf("") }
+
+    // Dialog state για ανακοίνωση κατά την επίλυση
+    var reportToResolve by remember { mutableStateOf<Report?>(null) }
+    var resolutionAnnouncementText by remember { mutableStateOf("") }
+
     var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
 
     val defaultEmployeeName = stringResource(R.string.role_employee)
@@ -113,6 +123,15 @@ fun EmployeeDashboardScreen(
                             contentDescription = stringResource(R.string.settings),
                             tint = MaterialTheme.colorScheme.onPrimary
                         )
+                    }
+                    if (onNavigateToProfile != null) {
+                        IconButton(onClick = onNavigateToProfile) {
+                            Icon(
+                                Icons.Default.AccountCircle,
+                                contentDescription = stringResource(R.string.profile_title),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
                     }
                     if (onNavigateToStats != null) {
                         IconButton(onClick = onNavigateToStats) {
@@ -330,18 +349,17 @@ fun EmployeeDashboardScreen(
                                 )
                             },
                             onResolve = {
-                                viewModel.updateStatus(
-                                    reportId = report.id,
-                                    newStatus = ReportStatus.RESOLVED,
-                                    verifiedBy = employeeIdentifier
-                                )
+                                reportToResolve = report
+                                val isEn = AppSettings.currentLanguage.value == "en"
+                                resolutionAnnouncementText = if (isEn) {
+                                    "The issue has been successfully resolved by municipal crews."
+                                } else {
+                                    "Το πρόβλημα αποκαταστάθηκε επιτυχώς από τα συνεργεία του Δήμου."
+                                }
                             },
                             onReject = {
-                                viewModel.updateStatus(
-                                    reportId = report.id,
-                                    newStatus = ReportStatus.REJECTED,
-                                    verifiedBy = employeeIdentifier
-                                )
+                                reportToReject = report
+                                rejectionReasonText = ""
                             }
                         )
                     }
@@ -404,6 +422,187 @@ fun EmployeeDashboardScreen(
             },
             dismissButton = {
                 TextButton(onClick = { reportToVerify = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // Διάλογος επιβεβαίωσης & καταχώρησης αιτιολογίας απόρριψης
+    if (reportToReject != null) {
+        val target = reportToReject!!
+        AlertDialog(
+            onDismissRequest = { reportToReject = null },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.Cancel,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.reject_report_title), fontWeight = FontWeight.Bold)
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = stringResource(R.string.rejection_reason_prompt),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        val chip1 = stringResource(R.string.rejection_chip_false)
+                        val chip2 = stringResource(R.string.rejection_chip_jurisdiction)
+                        val chip3 = stringResource(R.string.rejection_chip_already_fixed)
+                        val chip4 = stringResource(R.string.rejection_chip_insufficient)
+
+                        SuggestionChip(
+                            onClick = { rejectionReasonText = chip1 },
+                            label = { Text(chip1, style = MaterialTheme.typography.labelSmall) }
+                        )
+                        SuggestionChip(
+                            onClick = { rejectionReasonText = chip2 },
+                            label = { Text(chip2, style = MaterialTheme.typography.labelSmall) }
+                        )
+                        SuggestionChip(
+                            onClick = { rejectionReasonText = chip3 },
+                            label = { Text(chip3, style = MaterialTheme.typography.labelSmall) }
+                        )
+                        SuggestionChip(
+                            onClick = { rejectionReasonText = chip4 },
+                            label = { Text(chip4, style = MaterialTheme.typography.labelSmall) }
+                        )
+                    }
+
+                    OutlinedTextField(
+                        value = rejectionReasonText,
+                        onValueChange = { rejectionReasonText = it },
+                        label = { Text(stringResource(R.string.rejection_reason_label)) },
+                        placeholder = { Text(stringResource(R.string.rejection_reason_hint)) },
+                        minLines = 2,
+                        maxLines = 4,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val finalReason = rejectionReasonText.trim().ifBlank {
+                            if (AppSettings.currentLanguage.value == "en") "Rejected by municipality officer"
+                            else "Απορρίφθηκε από τον αρμόδιο υπάλληλο"
+                        }
+                        viewModel.updateStatus(
+                            reportId = target.id,
+                            newStatus = ReportStatus.REJECTED,
+                            verifiedBy = employeeIdentifier,
+                            rejectionReason = finalReason
+                        )
+                        reportToReject = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(stringResource(R.string.btn_reject))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { reportToReject = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // Διάλογος επίλυσης & καταχώρησης ανακοίνωσης επίλυσης
+    if (reportToResolve != null) {
+        val target = reportToResolve!!
+        AlertDialog(
+            onDismissRequest = { reportToResolve = null },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = Color(0xFF2E7D32)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.resolve_report_title), fontWeight = FontWeight.Bold)
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = stringResource(R.string.resolve_announcement_prompt),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        val chip1 = stringResource(R.string.resolve_chip_crews)
+                        val chip2 = stringResource(R.string.resolve_chip_traffic)
+                        val chip3 = stringResource(R.string.resolve_chip_fixed)
+
+                        SuggestionChip(
+                            onClick = { resolutionAnnouncementText = chip1 },
+                            label = { Text(chip1, style = MaterialTheme.typography.labelSmall) }
+                        )
+                        SuggestionChip(
+                            onClick = { resolutionAnnouncementText = chip2 },
+                            label = { Text(chip2, style = MaterialTheme.typography.labelSmall) }
+                        )
+                        SuggestionChip(
+                            onClick = { resolutionAnnouncementText = chip3 },
+                            label = { Text(chip3, style = MaterialTheme.typography.labelSmall) }
+                        )
+                    }
+
+                    OutlinedTextField(
+                        value = resolutionAnnouncementText,
+                        onValueChange = { resolutionAnnouncementText = it },
+                        label = { Text(stringResource(R.string.resolve_announcement_label)) },
+                        placeholder = { Text(stringResource(R.string.resolve_announcement_hint)) },
+                        minLines = 2,
+                        maxLines = 4,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val finalAnnouncement = resolutionAnnouncementText.trim().ifBlank {
+                            if (AppSettings.currentLanguage.value == "en") "The issue has been resolved."
+                            else "Το πρόβλημα επιλύθηκε επιτυχώς."
+                        }
+                        viewModel.updateStatus(
+                            reportId = target.id,
+                            newStatus = ReportStatus.RESOLVED,
+                            verifiedBy = employeeIdentifier,
+                            resolutionAnnouncement = finalAnnouncement
+                        )
+                        reportToResolve = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2E7D32)
+                    )
+                ) {
+                    Text(stringResource(R.string.btn_resolve_and_announce))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { reportToResolve = null }) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -629,6 +828,74 @@ fun ReportEmployeeCard(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                }
+            }
+
+            // Αιτιολογία Απόρριψης
+            if (report.status == ReportStatus.REJECTED.name && report.rejectionReason.isNotBlank()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
+                            RoundedCornerShape(8.dp)
+                        )
+                        .padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Cancel,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.rejection_reason_prefix, report.rejectionReason),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
+            // Ανακοίνωση Επίλυσης
+            if (report.status == ReportStatus.RESOLVED.name && report.resolutionAnnouncement.isNotBlank()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Color(0xFF2E7D32).copy(alpha = 0.15f),
+                            RoundedCornerShape(8.dp)
+                        )
+                        .padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Campaign,
+                        contentDescription = null,
+                        tint = Color(0xFF2E7D32),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Text(
+                            text = stringResource(R.string.resolve_announcement_prefix, report.resolutionAnnouncement),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFF1B5E20),
+                            fontWeight = FontWeight.Medium
+                        )
+                        if (report.resolvedAt != null) {
+                            val resolvedFormatted = remember(report.resolvedAt) {
+                                SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date(report.resolvedAt))
+                            }
+                            Text(
+                                text = stringResource(R.string.resolved_at_label, resolvedFormatted),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color(0xFF2E7D32)
+                            )
+                        }
+                    }
                 }
             }
 

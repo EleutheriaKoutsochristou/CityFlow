@@ -153,6 +153,57 @@ class AuthRepository(
     }
 
     /**
+     * Ενημέρωση στοιχείων προφίλ χρήστη (π.χ. Ονοματεπώνυμο).
+     */
+    suspend fun updateUserProfile(fullName: String): Resource<User> {
+        val uid = currentUserId
+        val isEn = AppSettings.currentLanguage.value == "en"
+        val trimmedName = fullName.trim()
+
+        if (trimmedName.isBlank()) {
+            return Resource.Error(if (isEn) "Full name cannot be empty." else "Το ονοματεπώνυμο δεν μπορεί να είναι κενό.")
+        }
+
+        if (uid == null) {
+            val email = auth.currentUser?.email.orEmpty()
+            return Resource.Success(
+                User(
+                    id = "local_user",
+                    email = email.ifBlank { "user@cityflow.local" },
+                    fullName = trimmedName,
+                    role = UserRole.CITIZEN.name,
+                    createdAt = System.currentTimeMillis()
+                )
+            )
+        }
+
+        return try {
+            firestore.collection("users").document(uid).update("fullName", trimmedName).await()
+
+            try {
+                val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                    .setDisplayName(trimmedName)
+                    .build()
+                auth.currentUser?.updateProfile(profileUpdates)?.await()
+            } catch (_: Exception) {
+                // Ignore profile update error if offline or limited auth
+            }
+
+            val snapshot = firestore.collection("users").document(uid).get().await()
+            val updatedUser = snapshot.toObject(User::class.java) ?: User(
+                id = uid,
+                email = auth.currentUser?.email.orEmpty(),
+                fullName = trimmedName,
+                role = UserRole.CITIZEN.name
+            )
+
+            Resource.Success(updatedUser)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: (if (isEn) "Failed to update profile." else "Αποτυχία ενημέρωσης προφίλ."), e)
+        }
+    }
+
+    /**
      * Αποσύνδεση χρήστη.
      */
     fun logout() {

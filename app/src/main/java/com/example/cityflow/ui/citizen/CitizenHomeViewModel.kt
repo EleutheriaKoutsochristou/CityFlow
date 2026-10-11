@@ -88,6 +88,13 @@ class CitizenHomeViewModel(
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    // Λίστα πρόσφατων ανακοινώσεων επίλυσης προβλημάτων
+    val recentResolvedAnnouncements: StateFlow<List<Report>> = _allReports.map { reports ->
+        reports.filter {
+            it.status == ReportStatus.RESOLVED.name && it.resolutionAnnouncement.isNotBlank()
+        }.sortedByDescending { it.resolvedAt ?: it.timestamp }.take(5)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     init {
         observeReports()
     }

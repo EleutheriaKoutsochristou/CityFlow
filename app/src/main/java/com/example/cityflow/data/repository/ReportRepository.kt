@@ -175,17 +175,36 @@ class ReportRepository(
         reportId: String,
         newStatus: ReportStatus,
         verifiedBy: String? = null,
-        practicalAdvice: String? = null
+        practicalAdvice: String? = null,
+        rejectionReason: String? = null,
+        resolutionAnnouncement: String? = null
     ): Resource<Unit> {
         return try {
             val updates = mutableMapOf<String, Any>(
                 "status" to newStatus.name
             )
 
-            if (newStatus == ReportStatus.VERIFIED) {
-                updates["verifiedAt"] = System.currentTimeMillis()
-                if (verifiedBy != null) updates["verifiedBy"] = verifiedBy
-                if (!practicalAdvice.isNullOrBlank()) updates["practicalAdvice"] = practicalAdvice
+            if (verifiedBy != null) {
+                updates["verifiedBy"] = verifiedBy
+            }
+
+            when (newStatus) {
+                ReportStatus.VERIFIED -> {
+                    updates["verifiedAt"] = System.currentTimeMillis()
+                    if (!practicalAdvice.isNullOrBlank()) updates["practicalAdvice"] = practicalAdvice
+                }
+                ReportStatus.REJECTED -> {
+                    if (!rejectionReason.isNullOrBlank()) {
+                        updates["rejectionReason"] = rejectionReason.trim()
+                    }
+                }
+                ReportStatus.RESOLVED -> {
+                    updates["resolvedAt"] = System.currentTimeMillis()
+                    if (!resolutionAnnouncement.isNullOrBlank()) {
+                        updates["resolutionAnnouncement"] = resolutionAnnouncement.trim()
+                    }
+                }
+                else -> Unit
             }
 
             reportsCollection.document(reportId).update(updates).await()

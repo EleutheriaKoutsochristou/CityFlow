@@ -74,6 +74,7 @@ fun CitizenHomeScreen(
     currentUser: User?,
     onNavigateToNewReport: () -> Unit,
     onNavigateToStats: () -> Unit,
+    onNavigateToProfile: (() -> Unit)? = null,
     onLogout: () -> Unit,
     viewModel: CitizenHomeViewModel = viewModel()
 ) {
@@ -86,6 +87,7 @@ fun CitizenHomeScreen(
     val isLocating by viewModel.isLocating.collectAsState()
     val locationError by viewModel.locationError.collectAsState()
     val nearbyAlerts by viewModel.nearbyAlerts.collectAsState()
+    val resolvedAnnouncements by viewModel.recentResolvedAnnouncements.collectAsState()
     val isLoadingReports by viewModel.isLoadingReports.collectAsState()
 
     var selectedImageForDialog by remember { mutableStateOf<String?>(null) }
@@ -222,6 +224,15 @@ fun CitizenHomeScreen(
                             contentDescription = stringResource(R.string.settings),
                             tint = MaterialTheme.colorScheme.onPrimary
                         )
+                    }
+                    if (onNavigateToProfile != null) {
+                        IconButton(onClick = onNavigateToProfile) {
+                            Icon(
+                                Icons.Default.AccountCircle,
+                                contentDescription = stringResource(R.string.profile_title),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
                     }
                     IconButton(onClick = onLogout) {
                         Icon(
@@ -560,6 +571,34 @@ fun CitizenHomeScreen(
                     }
                 }
             }
+
+            // Section: Πρόσφατες Ανακοινώσεις Επίλυσης
+            if (resolvedAnnouncements.isNotEmpty()) {
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Campaign,
+                            contentDescription = null,
+                            tint = Color(0xFF2E7D32),
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.nearby_resolved_announcements_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                items(resolvedAnnouncements, key = { "resolved_${it.id}" }) { resolvedReport ->
+                    ResolvedAnnouncementCard(report = resolvedReport)
+                }
+            }
         }
     }
 
@@ -836,3 +875,119 @@ fun getCategoryIcon(category: ReportCategory): ImageVector {
         ReportCategory.OTHER -> Icons.Default.ReportProblem
     }
 }
+
+/**
+ * Κάρτα προβολής ανακοίνωσης επίλυσης προβλήματος (Resolved Announcement Card).
+ */
+@Composable
+fun ResolvedAnnouncementCard(report: Report) {
+    val categoryTitle = report.reportCategory.localizedTitle
+    val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
+    val formattedDate = remember(report.resolvedAt, report.timestamp) {
+        dateFormatter.format(Date(report.resolvedAt ?: report.timestamp))
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFE8F5E9)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = Color(0xFF2E7D32),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = categoryTitle,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFFE8F5E9)
+                ) {
+                    Text(
+                        text = stringResource(R.string.filter_resolved),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF2E7D32),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                color = Color(0xFF2E7D32).copy(alpha = 0.1f)
+            ) {
+                Row(
+                    modifier = Modifier.padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Campaign,
+                        contentDescription = null,
+                        tint = Color(0xFF2E7D32),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = report.resolutionAnnouncement,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF1B5E20)
+                    )
+                }
+            }
+
+            if (report.address.isNotBlank()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.LocationOn,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = report.address,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.resolved_at_label, formattedDate),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+

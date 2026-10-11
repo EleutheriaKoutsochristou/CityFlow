@@ -27,7 +27,10 @@ data class Report(
     val verifiedAt: Long? = null,
     val verifiedBy: String? = null,
     val similarReportsCount: Int = 1,
-    val practicalAdvice: String = ""
+    val practicalAdvice: String = "",
+    val rejectionReason: String = "",
+    val resolutionAnnouncement: String = "",
+    val resolvedAt: Long? = null
 ) {
     @get:Exclude
     val reportCategory: ReportCategory

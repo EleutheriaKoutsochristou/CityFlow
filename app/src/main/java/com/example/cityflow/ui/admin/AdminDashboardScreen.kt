@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Dashboard
@@ -35,6 +36,7 @@ fun AdminDashboardScreen(
     currentUser: User?,
     onNavigateToEmployeeDashboard: () -> Unit,
     onNavigateToStats: (() -> Unit)? = null,
+    onNavigateToProfile: (() -> Unit)? = null,
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
@@ -61,6 +63,15 @@ fun AdminDashboardScreen(
                             contentDescription = stringResource(R.string.settings),
                             tint = MaterialTheme.colorScheme.onPrimary
                         )
+                    }
+                    if (onNavigateToProfile != null) {
+                        IconButton(onClick = onNavigateToProfile) {
+                            Icon(
+                                Icons.Default.AccountCircle,
+                                contentDescription = stringResource(R.string.profile_title),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
                     }
                     // Quick jump to Stats
                     if (onNavigateToStats != null) {

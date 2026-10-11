@@ -111,7 +111,9 @@ class EmployeeDashboardViewModel(
         reportId: String,
         newStatus: ReportStatus,
         verifiedBy: String,
-        practicalAdvice: String? = null
+        practicalAdvice: String? = null,
+        rejectionReason: String? = null,
+        resolutionAnnouncement: String? = null
     ) {
         viewModelScope.launch {
             _actionState.value = Resource.Loading
@@ -119,7 +121,9 @@ class EmployeeDashboardViewModel(
                 reportId = reportId,
                 newStatus = newStatus,
                 verifiedBy = verifiedBy,
-                practicalAdvice = practicalAdvice
+                practicalAdvice = practicalAdvice,
+                rejectionReason = rejectionReason,
+                resolutionAnnouncement = resolutionAnnouncement
             )
 
             _actionState.value = when (result) {

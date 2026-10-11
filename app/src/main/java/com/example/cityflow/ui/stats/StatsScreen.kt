@@ -867,6 +867,74 @@ private fun UserReportHistoryCard(
                     )
                 }
             }
+
+            // Αιτιολογία Απόρριψης
+            if (report.status == ReportStatus.REJECTED.name && report.rejectionReason.isNotBlank()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
+                            RoundedCornerShape(6.dp)
+                        )
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Cancel,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = stringResource(R.string.rejection_reason_prefix, report.rejectionReason),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
+            // Ανακοίνωση Επίλυσης
+            if (report.status == ReportStatus.RESOLVED.name && report.resolutionAnnouncement.isNotBlank()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Color(0xFF2E7D32).copy(alpha = 0.15f),
+                            RoundedCornerShape(6.dp)
+                        )
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Campaign,
+                        contentDescription = null,
+                        tint = Color(0xFF2E7D32),
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Column {
+                        Text(
+                            text = stringResource(R.string.resolve_announcement_prefix, report.resolutionAnnouncement),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFF1B5E20),
+                            fontWeight = FontWeight.Medium
+                        )
+                        if (report.resolvedAt != null) {
+                            val resolvedFormatted = remember(report.resolvedAt) {
+                                SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date(report.resolvedAt))
+                            }
+                            Text(
+                                text = stringResource(R.string.resolved_at_label, resolvedFormatted),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color(0xFF2E7D32)
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

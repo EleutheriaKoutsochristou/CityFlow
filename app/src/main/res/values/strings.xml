@@ -157,4 +157,46 @@
     <string name="error_gps_needed_submission">Απαιτείται λήψη τοποθεσίας GPS πριν την υποβολή.</string>
     <string name="location_permission_denied">Η πρόσβαση στην τοποθεσία απορρίφθηκε.</string>
     <string name="location_gps_failed">Δεν ήταν δυνατή η ανάκτηση στίγματος GPS.</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_title">Το Προφίλ μου</string>
+    <string name="profile_account_details">Στοιχεία Λογαριασμού</string>
+    <string name="profile_full_name">Ονοματεπώνυμο</string>
+    <string name="profile_email">Διεύθυνση Email</string>
+    <string name="profile_role">Ρόλος Χρήστη</string>
+    <string name="profile_created_at">Ημερομηνία Εγγραφής</string>
+    <string name="profile_member_since">Μέλος από: %1$s</string>
+    <string name="profile_edit_name">Επεξεργασία Ονόματος</string>
+    <string name="profile_save_changes">Αποθήκευση</string>
+    <string name="profile_cancel_edit">Ακύρωση</string>
+    <string name="profile_updated_success">Το προφίλ ενημερώθηκε επιτυχώς!</string>
+    <string name="profile_stats_shortcut">Προβολή Ιστορικού &amp; Στατιστικών</string>
+    <string name="profile_settings_shortcut">Ρυθμίσεις (Γλώσσα &amp; Θέμα)</string>
+    <string name="profile_quick_actions">Γρήγορες Ενέργειες</string>
+
+    <!-- Rejection Justification / Reason -->
+    <string name="reject_report_title">Απόρριψη Αναφοράς</string>
+    <string name="rejection_reason_prompt">Εισάγετε την αιτιολογία για την απόρριψη της αναφοράς:</string>
+    <string name="rejection_reason_label">Αιτιολογία Απόρριψης</string>
+    <string name="rejection_reason_hint">π.χ. Ψευδής αναφορά, εκτός αρμοδιότητας…</string>
+    <string name="rejection_reason_prefix">Αιτιολογία Απόρριψης: %1$s</string>
+    <string name="rejection_reason_required">Παρακαλώ εισάγετε αιτιολογία πριν την απόρριψη.</string>
+    <string name="rejection_chip_false">Ψευδής / ανακριβής αναφορά</string>
+    <string name="rejection_chip_jurisdiction">Εκτός αρμοδιότητας Δήμου</string>
+    <string name="rejection_chip_already_fixed">Το πρόβλημα έχει ήδη επιλυθεί</string>
+    <string name="rejection_chip_insufficient">Ανεπαρκή στοιχεία εντοπισμού</string>
+
+    <!-- Resolution Announcement -->
+    <string name="resolve_report_title">Επίλυση Αναφοράς &amp; Ανακοίνωση</string>
+    <string name="resolve_announcement_prompt">Συντάξτε την ανακοίνωση επίλυσης που θα εμφανίζεται στους πολίτες:</string>
+    <string name="resolve_announcement_label">Ανακοίνωση Επίλυσης</string>
+    <string name="resolve_announcement_hint">π.χ. Το πρόβλημα αποκαταστάθηκε επιτυχώς…</string>
+    <string name="resolve_announcement_prefix">Ανακοίνωση Επίλυσης: %1$s</string>
+    <string name="resolve_chip_crews">Αποκαταστάθηκε από τα συνεργεία του Δήμου</string>
+    <string name="resolve_chip_traffic">Δόθηκε κανονικά στην κυκλοφορία</string>
+    <string name="resolve_chip_fixed">Η βλάβη επισκευάστηκε πλήρως</string>
+    <string name="btn_resolve_and_announce">Επίλυση &amp; Ανακοίνωση</string>
+    <string name="nearby_resolved_announcements_title">Πρόσφατες Ανακοινώσεις Επίλυσης</string>
+    <string name="no_resolved_announcements">Δεν υπάρχουν πρόσφατες ανακοινώσεις επίλυσης στην περιοχή.</string>
+    <string name="resolved_at_label">Επιλύθηκε: %1$s</string>
 </resources>

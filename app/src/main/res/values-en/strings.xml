@@ -157,4 +157,46 @@
     <string name="error_gps_needed_submission">GPS location required before submission.</string>
     <string name="location_permission_denied">Location access denied.</string>
     <string name="location_gps_failed">Could not acquire GPS fix.</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_title">My Profile</string>
+    <string name="profile_account_details">Account Details</string>
+    <string name="profile_full_name">Full Name</string>
+    <string name="profile_email">Email Address</string>
+    <string name="profile_role">User Role</string>
+    <string name="profile_created_at">Registration Date</string>
+    <string name="profile_member_since">Member since: %1$s</string>
+    <string name="profile_edit_name">Edit Name</string>
+    <string name="profile_save_changes">Save</string>
+    <string name="profile_cancel_edit">Cancel</string>
+    <string name="profile_updated_success">Profile updated successfully!</string>
+    <string name="profile_stats_shortcut">View History &amp; Statistics</string>
+    <string name="profile_settings_shortcut">Settings (Language &amp; Theme)</string>
+    <string name="profile_quick_actions">Quick Actions</string>
+
+    <!-- Rejection Justification / Reason -->
+    <string name="reject_report_title">Reject Report</string>
+    <string name="rejection_reason_prompt">Enter justification for rejecting this report:</string>
+    <string name="rejection_reason_label">Rejection Reason</string>
+    <string name="rejection_reason_hint">e.g. Inaccurate report, out of municipal jurisdiction…</string>
+    <string name="rejection_reason_prefix">Rejection Reason: %1$s</string>
+    <string name="rejection_reason_required">Please provide a rejection reason.</string>
+    <string name="rejection_chip_false">Inaccurate report</string>
+    <string name="rejection_chip_jurisdiction">Out of jurisdiction</string>
+    <string name="rejection_chip_already_fixed">Already resolved</string>
+    <string name="rejection_chip_insufficient">Insufficient details</string>
+
+    <!-- Resolution Announcement -->
+    <string name="resolve_report_title">Resolve Report &amp; Announcement</string>
+    <string name="resolve_announcement_prompt">Compose resolution announcement for citizens:</string>
+    <string name="resolve_announcement_label">Resolution Announcement</string>
+    <string name="resolve_announcement_hint">e.g. The issue has been successfully resolved…</string>
+    <string name="resolve_announcement_prefix">Resolution Announcement: %1$s</string>
+    <string name="resolve_chip_crews">Restored by municipal crews</string>
+    <string name="resolve_chip_traffic">Reopened to normal traffic</string>
+    <string name="resolve_chip_fixed">Issue completely repaired</string>
+    <string name="btn_resolve_and_announce">Resolve &amp; Announce</string>
+    <string name="nearby_resolved_announcements_title">Recent Resolution Announcements</string>
+    <string name="no_resolved_announcements">No recent resolution announcements in this area.</string>
+    <string name="resolved_at_label">Resolved: %1$s</string>
 </resources>

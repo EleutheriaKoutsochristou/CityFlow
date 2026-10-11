@@ -17,6 +17,7 @@ import com.example.cityflow.ui.auth.RegisterScreen
 import com.example.cityflow.ui.citizen.CitizenHomeScreen
 import com.example.cityflow.ui.citizen.SubmitReportScreen
 import com.example.cityflow.ui.employee.EmployeeDashboardScreen
+import com.example.cityflow.ui.profile.ProfileScreen
 import com.example.cityflow.ui.stats.StatsScreen
 
 @Composable
@@ -85,6 +86,9 @@ fun AppNavHost(
                 onNavigateToStats = {
                     navController.navigate(Screen.Stats.route)
                 },
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route)
+                },
                 onLogout = {
                     authViewModel.logout()
                     navController.navigate(Screen.Login.route) {
@@ -115,6 +119,9 @@ fun AppNavHost(
                 onNavigateToStats = {
                     navController.navigate(Screen.Stats.route)
                 },
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route)
+                },
                 onLogout = {
                     authViewModel.logout()
                     navController.navigate(Screen.Login.route) {
@@ -133,6 +140,9 @@ fun AppNavHost(
                 onNavigateToStats = {
                     navController.navigate(Screen.Stats.route)
                 },
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route)
+                },
                 onLogout = {
                     authViewModel.logout()
                     navController.navigate(Screen.Login.route) {
@@ -147,6 +157,27 @@ fun AppNavHost(
                 currentUser = currentUser,
                 onNavigateBack = {
                     navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.Profile.route) {
+            ProfileScreen(
+                currentUser = currentUser,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToStats = {
+                    navController.navigate(Screen.Stats.route)
+                },
+                onUpdateProfile = { newName ->
+                    authViewModel.updateProfile(newName)
+                },
+                onLogout = {
+                    authViewModel.logout()
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }
