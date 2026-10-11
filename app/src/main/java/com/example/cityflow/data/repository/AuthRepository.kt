@@ -10,30 +10,40 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
 /**
- * Repository για τη διαχείριση χρηστών και ταυτοποίησης (Authentication).
- * Συνδυάζει το Firebase Authentication με το Firestore (συλλογή "users").
+ * Repository managing user accounts, authentication, and user profile data.
+ * Bridges Firebase Authentication with Cloud Firestore (the "users" collection).
+ * Also supports simulated/demo accounts for grading and testing without external auth dependency.
  */
 class AuthRepository(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
 
+    /** The currently authenticated Firebase user instance, or null if unauthenticated. */
     val currentUser: FirebaseUser?
         get() = auth.currentUser
 
+    /** Current user's Firebase UID, or null. */
     val currentUserId: String?
         get() = auth.currentUser?.uid
 
+    /** True if a user is currently signed in. */
     val isUserLoggedIn: Boolean
         get() = auth.currentUser != null
 
     /**
-     * Σύνδεση χρήστη με Email & Password (ή hardcoded admin).
+     * Signs in a user using Email and Password.
+     * Includes support for preset evaluation accounts ("admin" and "employee").
+     *
+     * @param email User's email or preset demo username.
+     * @param password Password credential.
+     * @return [Resource.Success] with the loaded [User] profile, or [Resource.Error] upon failure.
      */
     suspend fun login(email: String, password: String): Resource<User> {
         val trimmedIdentifier = email.trim()
         val trimmedPassword = password.trim()
 
+        // 1. Check for preset Administrator demo credentials
         if (trimmedIdentifier.equals("admin", ignoreCase = true) ||
             trimmedIdentifier.equals("admin@cityflow.com", ignoreCase = true) ||
             trimmedIdentifier.equals("admin@cityflow.local", ignoreCase = true)
@@ -54,6 +64,7 @@ class AuthRepository(
             }
         }
 
+        // 2. Check for preset Employee demo credentials
         if (trimmedIdentifier.equals("employee", ignoreCase = true) ||
             trimmedIdentifier.equals("employee@cityflow.com", ignoreCase = true) ||
             trimmedIdentifier.equals("employee@cityflow.local", ignoreCase = true)
@@ -74,12 +85,14 @@ class AuthRepository(
             }
         }
 
+        // 3. Authenticate with Firebase Authentication
         return try {
             val isEn = AppSettings.currentLanguage.value == "en"
             val authResult = auth.signInWithEmailAndPassword(trimmedIdentifier, password).await()
             val firebaseUser = authResult.user
                 ?: return Resource.Error(if (isEn) "Authentication failed: No user found." else "Αποτυχία ταυτοποίησης: Δεν βρέθηκε χρήστης.")
 
+            // Fetch custom user profile attributes (role, full name) from Firestore
             val userSnapshot = firestore.collection("users")
                 .document(firebaseUser.uid)
                 .get()
@@ -100,7 +113,14 @@ class AuthRepository(
     }
 
     /**
-     * Εγγραφή νέου χρήστη και αποθήκευση του ρόλου του στο Firestore.
+     * Registers a new user account with Firebase Authentication and creates their profile in Cloud Firestore.
+     * Note: Creating Admin accounts is restricted to existing administrators.
+     *
+     * @param email Account email.
+     * @param password Account password.
+     * @param fullName Full display name.
+     * @param role Target authorization role.
+     * @return [Resource.Success] with the newly created [User], or [Resource.Error].
      */
     suspend fun register(
         email: String,
@@ -126,6 +146,7 @@ class AuthRepository(
                 createdAt = System.currentTimeMillis()
             )
 
+            // Save new user document in "users" collection
             firestore.collection("users")
                 .document(firebaseUser.uid)
                 .set(newUser)
@@ -138,7 +159,7 @@ class AuthRepository(
     }
 
     /**
-     * Ανάκτηση του προφίλ του τρέχοντος συνδεδεμένου χρήστη.
+     * Retrieves the profile document from Firestore for the currently logged-in user.
      */
     suspend fun getCurrentUserProfile(): Resource<User?> {
         val uid = currentUserId ?: return Resource.Success(null)
@@ -153,7 +174,10 @@ class AuthRepository(
     }
 
     /**
-     * Ενημέρωση στοιχείων προφίλ χρήστη (π.χ. Ονοματεπώνυμο).
+     * Updates profile attributes (e.g. Full Name) in Firestore and updates the Firebase Auth display name.
+     *
+     * @param fullName New full name.
+     * @return [Resource.Success] with updated user data, or [Resource.Error].
      */
     suspend fun updateUserProfile(fullName: String): Resource<User> {
         val uid = currentUserId
@@ -164,6 +188,7 @@ class AuthRepository(
             return Resource.Error(if (isEn) "Full name cannot be empty." else "Το ονοματεπώνυμο δεν μπορεί να είναι κενό.")
         }
 
+        // Support for local/demo user profile update
         if (uid == null) {
             val email = auth.currentUser?.email.orEmpty()
             return Resource.Success(
@@ -178,8 +203,10 @@ class AuthRepository(
         }
 
         return try {
+            // Update full name in Firestore document
             firestore.collection("users").document(uid).update("fullName", trimmedName).await()
 
+            // Update Firebase Auth display name
             try {
                 val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
                     .setDisplayName(trimmedName)
@@ -189,6 +216,7 @@ class AuthRepository(
                 // Ignore profile update error if offline or limited auth
             }
 
+            // Reload updated profile
             val snapshot = firestore.collection("users").document(uid).get().await()
             val updatedUser = snapshot.toObject(User::class.java) ?: User(
                 id = uid,
@@ -204,7 +232,7 @@ class AuthRepository(
     }
 
     /**
-     * Αποσύνδεση χρήστη.
+     * Signs out the current user from Firebase Authentication.
      */
     fun logout() {
         auth.signOut()

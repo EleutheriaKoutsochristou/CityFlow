@@ -20,9 +20,11 @@ import com.example.cityflow.R
 import com.example.cityflow.util.AppSettings
 
 /**
- * Κοινό modal παράθυρο Ρυθμίσεων για άμεση εναλλαγή:
- * 1. Dark / Light Mode
- * 2. Γλώσσας (Ελληνικά / English)
+ * Shared modal configuration dialog allowing users to:
+ * 1. Toggle Dark and Light visual themes in real-time.
+ * 2. Switch application language between Greek (Ελληνικά) and English.
+ *
+ * @param onDismiss Callback invoked when the user dismisses or confirms the dialog.
  */
 @Composable
 fun SettingsDialog(

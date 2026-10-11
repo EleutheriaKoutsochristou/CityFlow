@@ -12,12 +12,18 @@ import com.example.cityflow.util.NotificationHelper
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
+/**
+ * Time duration filter for analytics aggregation and history filtering.
+ */
 enum class StatsTimeFilter {
     ALL_TIME,
     LAST_7_DAYS,
     LAST_30_DAYS
 }
 
+/**
+ * Status filter criteria for analytics history views.
+ */
 enum class StatsStatusFilter {
     ALL,
     SUBMITTED,
@@ -27,12 +33,26 @@ enum class StatsStatusFilter {
     REJECTED
 }
 
+/**
+ * Category breakdown analytics item.
+ *
+ * @property category The incident category.
+ * @property count Total number of incidents in this category.
+ * @property percentage Proportion of total incidents (0.0 to 1.0).
+ */
 data class CategoryStatItem(
     val category: ReportCategory,
     val count: Int,
     val percentage: Float
 )
 
+/**
+ * Status funnel analytics item.
+ *
+ * @property status The lifecycle status.
+ * @property count Total incidents currently in this status.
+ * @property percentage Proportion of total incidents (0.0 to 1.0).
+ */
 data class StatusStatItem(
     val status: ReportStatus,
     val count: Int,
@@ -40,12 +60,12 @@ data class StatusStatItem(
 )
 
 /**
- * ViewModel για την οθόνη Στατιστικών & Ιστορικού (Specification 10).
+ * ViewModel for Statistics & Analytics visualization and incident history (MVVM pattern).
  *
- * Υπολογίζει δυναμικά ανάλογα με το ρόλο:
- * - Για Πολίτη: Προσωπικά στατιστικά (αναφορές χρήστη, εγκρίσεις, επιλύσεις, κοντινές ειδοποιήσεις) & προσωπικό ιστορικό.
- * - Για Υπάλληλο/Διαχειριστή: Επιχειρησιακά στατιστικά (εκκρεμείς, σε εξέλιξη, επιλυμένες, κρίσιμες) & ιστορικό όλων των αναφορών πόλης.
- * - Και για τους δύο: Κατανομή συχνότερων κατηγοριών και ποσοστό επίλυσης πόλης.
+ * Computes role-aware metrics:
+ * - Citizen view: Personal contribution summary (submitted, verified, resolved counts) & local alerts counter.
+ * - Employee / Admin view: Operational triage metrics (pending review, active in progress, critical priority count).
+ * - City-wide metrics: Incident resolution rate, category distribution percentages, and lifecycle funnel.
  */
 class StatsViewModel(
     private val reportRepository: ReportRepository = ReportRepository()
@@ -57,6 +77,7 @@ class StatsViewModel(
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
+    /** True if active user has Municipal Employee or Admin role. */
     val isEmployeeOrAdmin: StateFlow<Boolean> = _currentUser.map { it?.isEmployeeOrAdmin == true }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
@@ -74,12 +95,18 @@ class StatsViewModel(
         observeAllReports()
     }
 
+    /**
+     * Initializes user context and retrieves persistent local device proximity alert counts.
+     */
     fun initUser(user: User?, context: Context) {
         _currentUser.value = user
         _userId.value = user?.id.orEmpty()
         _receivedAlertsCount.value = NotificationHelper.getReceivedAlertsCount(context)
     }
 
+    /**
+     * Observes real-time reports flow from repository.
+     */
     private fun observeAllReports() {
         viewModelScope.launch {
             reportRepository.getAllReportsFlow()
@@ -93,16 +120,22 @@ class StatsViewModel(
         }
     }
 
+    /**
+     * Updates active time range filter.
+     */
     fun setTimeFilter(filter: StatsTimeFilter) {
         _timeFilter.value = filter
     }
 
+    /**
+     * Updates active status filter.
+     */
     fun setStatusFilter(filter: StatsStatusFilter) {
         _statusFilter.value = filter
     }
 
     /**
-     * Όλες οι αναφορές του συγκεκριμένου συνδεδεμένου χρήστη.
+     * Reports submitted by the currently authenticated user.
      */
     val userReports: StateFlow<List<Report>> = combine(_allReports, _userId) { reports, uid ->
         if (uid.isBlank()) emptyList()
@@ -110,44 +143,62 @@ class StatsViewModel(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     /**
-     * Προσωπικά στατιστικά του χρήστη (User Stats Summary - για Πολίτη).
+     * Personal citizen metric: total reports submitted by user.
      */
     val userTotalCount: StateFlow<Int> = userReports.map { it.size }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
+    /**
+     * Personal citizen metric: count of user's reports that have been verified or progressed.
+     */
     val userVerifiedCount: StateFlow<Int> = userReports.map { reports ->
         reports.count { it.status == ReportStatus.VERIFIED.name || it.status == ReportStatus.IN_PROGRESS.name || it.status == ReportStatus.RESOLVED.name }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
+    /**
+     * Personal citizen metric: count of user's reports successfully resolved.
+     */
     val userResolvedCount: StateFlow<Int> = userReports.map { reports ->
         reports.count { it.status == ReportStatus.RESOLVED.name }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     /**
-     * Επιχειρησιακά Στατιστικά Διαχείρισης (για Υπάλληλο / Admin).
+     * Operational metric: count of reports awaiting municipal review.
      */
     val pendingReviewCount: StateFlow<Int> = _allReports.map { reports ->
         reports.count { it.status == ReportStatus.SUBMITTED.name }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
+    /**
+     * Operational metric: count of active reports currently in progress.
+     */
     val activeInProgressCount: StateFlow<Int> = _allReports.map { reports ->
         reports.count { it.status == ReportStatus.VERIFIED.name || it.status == ReportStatus.IN_PROGRESS.name }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
+    /**
+     * Operational metric: count of critical priority incidents (PriorityScore >= 18.0).
+     */
     val criticalPriorityCount: StateFlow<Int> = _allReports.map { reports ->
         reports.count { it.priorityScore >= 18.0 }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     /**
-     * Συνολικά στατιστικά πόλης (City Overview Stats).
+     * City-wide metric: total number of reports recorded in the system.
      */
     val cityTotalCount: StateFlow<Int> = _allReports.map { it.size }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
+    /**
+     * City-wide metric: total number of resolved incidents.
+     */
     val cityResolvedCount: StateFlow<Int> = _allReports.map { reports ->
         reports.count { it.status == ReportStatus.RESOLVED.name }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
+    /**
+     * City-wide metric: overall percentage of incidents resolved (0 to 100%).
+     */
     val cityResolutionRate: StateFlow<Int> = _allReports.map { reports ->
         if (reports.isEmpty()) 0
         else {
@@ -157,8 +208,7 @@ class StatsViewModel(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     /**
-     * Κατανομή και συχνότητα εμφάνισης κατηγοριών (Category Breakdown).
-     * Ταξινομημένο από τη συχνότερη κατηγορία προς τη λιγότερο συχνή.
+     * Category breakdown sorted in descending order of frequency.
      */
     val categoryBreakdown: StateFlow<List<CategoryStatItem>> = _allReports.map { reports ->
         val total = reports.size
@@ -175,7 +225,7 @@ class StatsViewModel(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     /**
-     * Κατανομή αναφορών ανά κατάσταση (Status Breakdown / Funnel).
+     * Lifecycle distribution of reports across statuses.
      */
     val statusBreakdown: StateFlow<List<StatusStatItem>> = _allReports.map { reports ->
         val total = reports.size
@@ -203,7 +253,7 @@ class StatsViewModel(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     /**
-     * Φιλτραρισμένη λίστα ιστορικού αναφορών (προσωπικών για πολίτη, όλης της πόλης για υπάλληλο).
+     * Filtered list of history reports (user's personal reports for citizens, city-wide for employees).
      */
     val filteredUserReports: StateFlow<List<Report>> = combine(
         baseHistoryReports,

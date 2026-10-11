@@ -46,13 +46,17 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * Οθόνη Ιστορικού & Στατιστικών (Specification 10).
+ * Incident Statistics & History Screen.
  *
- * Περιλαμβάνει:
- * 1. Προσωπικά στατιστικά χρήστη (Υποβληθείσες, Επικυρωμένες, Επιλυμένες, Ειδοποιήσεις).
- * 2. Συνολική εικόνα πόλης και ποσοστό επίλυσης.
- * 3. Συχνότερες κατηγορίες προβλημάτων με μπάρες κατανομής (Category Breakdown).
- * 4. Προσωπικό ιστορικό αναφορών με φίλτρα χρόνου και κατάστασης.
+ * Provides:
+ * 1. Personal Citizen Contribution summary (Submitted, Verified, Resolved, Nearby Alerts Received).
+ * 2. Operational Municipality Triage metrics (Pending Review, In Progress, Critical Priority).
+ * 3. City-wide incident analytics (Total Incidents, City Resolution Rate %, Category Donut Chart, Status Funnel Bar Chart).
+ * 4. Filterable incident history list with time filtering (All Time, Last 7 Days, Last 30 Days) and status filtering.
+ *
+ * @param currentUser Currently authenticated user.
+ * @param onNavigateBack Callback navigating back to prior screen.
+ * @param viewModel ViewModel calculating aggregated analytics and historical feeds.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

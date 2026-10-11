@@ -6,13 +6,18 @@ import android.net.Uri
 import android.widget.Toast
 
 /**
- * Βοηθητική κλάση για άνοιγμα τοποθεσίας σε εξωτερική εφαρμογή χάρτη (π.χ. Google Maps).
+ * Utility helper for dispatching navigation/location intents to external map applications (e.g. Google Maps).
  */
 object MapUtils {
 
     /**
-     * Ανοίγει την τοποθεσία στον προεπιλεγμένο χάρτη της συσκευής (Google Maps κ.ά.).
-     * Σε περίπτωση που δεν υπάρχει εγκατεστημένη εφαρμογή χαρτών, ανοίγει το Google Maps στον browser.
+     * Launches the location in the device's default navigation or map application.
+     * If no native map app is installed or intent resolution fails, gracefully falls back to opening Google Maps in a web browser.
+     *
+     * @param context Application or Activity context.
+     * @param latitude Target latitude coordinate.
+     * @param longitude Target longitude coordinate.
+     * @param label Optional text pin label for the marker on the map.
      */
     fun openMap(context: Context, latitude: Double, longitude: Double, label: String = "") {
         val isEn = AppSettings.currentLanguage.value == "en"
@@ -25,6 +30,7 @@ object MapUtils {
             return
         }
 
+        // Construct standard geo URI with optional label query
         val uriString = if (label.isNotBlank()) {
             "geo:$latitude,$longitude?q=$latitude,$longitude(${Uri.encode(label)})"
         } else {
@@ -36,9 +42,11 @@ object MapUtils {
         }
 
         try {
+            // Attempt to start native map application
             context.startActivity(mapIntent)
         } catch (_: Exception) {
             try {
+                // Fallback to web browser Google Maps search
                 val webUri = Uri.parse("https://www.google.com/maps/search/?api=1&query=$latitude,$longitude")
                 val webIntent = Intent(Intent.ACTION_VIEW, webUri).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK

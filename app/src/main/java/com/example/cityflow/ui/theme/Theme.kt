@@ -27,6 +27,14 @@ private val LightColorScheme = lightColorScheme(
     surface = LightSurface
 )
 
+/**
+ * Application Theme wrapper for CityFlow.
+ * Applies Material 3 Color Schemes (Dark or Light) and Typography.
+ * Also configures the Android System Window Status Bar styling and contrast.
+ *
+ * @param darkTheme Whether to render in Dark Theme mode (defaults to system setting).
+ * @param content Child Compose tree.
+ */
 @Composable
 fun CityFlowTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -35,6 +43,7 @@ fun CityFlowTheme(
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
     val view = LocalView.current
 
+    // Synchronize window status bar color with theme primary color
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as? Activity)?.window

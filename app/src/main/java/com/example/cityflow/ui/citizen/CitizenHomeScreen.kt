@@ -59,14 +59,23 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * Αρχική Οθόνη Πολίτη (Citizen Flow).
+ * Citizen Main Landing Screen (Citizen Flow).
  *
- * Περιλαμβάνει:
- * - Προφίλ χρήστη και ένδειξη τρέχουσας θέσης GPS
- * - Κάρτες γρήγορης πρόσβασης: Υποβολή Αναφοράς & Στατιστικά/Ιστορικό
- * - Real-time ροή κοντινών ειδοποιήσεων (Nearby Alerts Feed) βάσει γεωγραφικής ακτίνας
- * - Εμφάνιση πρακτικών οδηγιών («Αποφύγετε το σημείο» κ.λπ.)
- * - Αυτόματη αποστολή ειδοποιήσεων Android όταν εντοπίζονται νέα προβλήματα
+ * Implements:
+ * - Current GPS location display with manual refresh and reverse geocoding.
+ * - Quick action banner buttons (Submit New Report, Incident Analytics & History).
+ * - Real-time stream of nearby verified hazards and accessibility obstacles within category geofence radius.
+ * - Localized practical advice alerts ("Avoid area", "Exercise caution").
+ * - Photo dialog preview for captured evidence images.
+ * - Push notification trigger upon entering geofenced areas.
+ * - Top app bar with language/theme settings and profile navigation.
+ *
+ * @param currentUser Currently signed-in citizen profile.
+ * @param onNavigateToNewReport Navigation callback to open report submission.
+ * @param onNavigateToStats Navigation callback to open stats and history.
+ * @param onNavigateToProfile Navigation callback to open profile.
+ * @param onLogout Callback for signing out.
+ * @param viewModel ViewModel tracking location, nearby incidents, and announcements.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

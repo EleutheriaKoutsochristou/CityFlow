@@ -54,13 +54,20 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 
 /**
- * Οθόνη υποβολής νέας αναφοράς συμβάντος από τον πολίτη (Citizen Flow).
- * Περιλαμβάνει:
- * - Dropdown επιλογής κατηγορίας προβλήματος
- * - Περιγραφή / σχόλια
- * - Αυτόματη λήψη GPS τοποθεσίας & ανανέωση
- * - Λήψη φωτογραφίας από κάμερα ή συλλογή & προεπισκόπηση
- * - Κουμπί υποβολής & Snackbar επιβεβαίωσης
+ * Screen for submitting an incident report by a citizen (Citizen Flow).
+ *
+ * Includes:
+ * - Category picker dropdown with visual indicators.
+ * - Mandatory detailed description field.
+ * - Automatic GPS location detection with reverse geocoding to human-readable address.
+ * - Photo capture via Camera and Gallery image picker with image preview and delete option.
+ * - Connectivity check and form validation prior to submission.
+ * - Submission feedback via Snackbar and automatic navigation pop on success.
+ *
+ * @param currentUser The citizen currently submitting the report.
+ * @param viewModel ViewModel controlling form state and submission.
+ * @param onNavigateBack Callback when back button is pressed.
+ * @param onSubmitSuccess Callback invoked upon successful report creation.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

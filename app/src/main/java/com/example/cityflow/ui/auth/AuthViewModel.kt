@@ -13,16 +13,19 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel διαχείρισης κατάστασης ταυτοποίησης (Login / Registration / Session).
+ * ViewModel managing user authentication state, active sessions, and profile updates (MVVM Pattern).
+ * Exposes reactive [StateFlow] streams for UI observers.
  */
 class AuthViewModel(
     private val repository: AuthRepository = AuthRepository()
 ) : ViewModel() {
 
     private val _authState = MutableStateFlow<Resource<User>>(Resource.Idle)
+    /** Asynchronous status of active auth requests (Idle, Loading, Success, Error). */
     val authState: StateFlow<Resource<User>> = _authState.asStateFlow()
 
     private val _currentUser = MutableStateFlow<User?>(null)
+    /** Current authenticated user profile, or null when signed out. */
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
     init {
@@ -30,7 +33,7 @@ class AuthViewModel(
     }
 
     /**
-     * Έλεγχος αν ο χρήστης είναι ήδη συνδεδεμένος.
+     * Checks if a persistent Firebase session exists on startup and loads the user profile.
      */
     fun checkCurrentSession() {
         if (repository.isUserLoggedIn) {
@@ -56,7 +59,11 @@ class AuthViewModel(
     }
 
     /**
-     * Σύνδεση με email/username και κωδικό.
+     * Initiates user sign in with email/identifier and password.
+     * Includes fallback authentication for evaluator admin accounts.
+     *
+     * @param email User email or demo identifier.
+     * @param pass Password.
      */
     fun login(email: String, pass: String) {
         val trimmedIdentifier = email.trim()
@@ -68,7 +75,7 @@ class AuthViewModel(
             return
         }
 
-        // Hardcoded admin login
+        // Hardcoded admin evaluation bypass
         if (trimmedIdentifier.equals("admin", ignoreCase = true)) {
             if (trimmedPass == "admin") {
                 val adminUser = User(
@@ -97,7 +104,12 @@ class AuthViewModel(
     }
 
     /**
-     * Εγγραφή νέου χρήστη με ρόλο (CITIZEN ή EMPLOYEE).
+     * Registers a new account with email, password, full name, and chosen role (Citizen or Employee).
+     *
+     * @param email Account email.
+     * @param pass Password (minimum 6 characters).
+     * @param fullName User display name.
+     * @param role Target authorization role.
      */
     fun register(email: String, pass: String, fullName: String, role: UserRole) {
         val isEn = AppSettings.currentLanguage.value == "en"
@@ -122,7 +134,10 @@ class AuthViewModel(
     }
 
     /**
-     * Ενημέρωση προφίλ χρήστη.
+     * Updates the user's full name in their profile.
+     *
+     * @param fullName New display name.
+     * @param onResult Optional completion callback.
      */
     fun updateProfile(fullName: String, onResult: ((Resource<User>) -> Unit)? = null) {
         val isEn = AppSettings.currentLanguage.value == "en"
@@ -134,6 +149,7 @@ class AuthViewModel(
         }
 
         val current = _currentUser.value
+        // Handle mock/demo evaluation sessions without network modification
         if (current?.id == "hardcoded_admin" || current?.id == "hardcoded_employee" || repository.currentUserId == null) {
             val updated = current?.copy(fullName = trimmedName) ?: User(
                 id = "mock_user",
@@ -156,7 +172,7 @@ class AuthViewModel(
     }
 
     /**
-     * Αποσύνδεση χρήστη.
+     * Logs out the active user and resets session states.
      */
     fun logout() {
         repository.logout()
@@ -164,6 +180,9 @@ class AuthViewModel(
         _authState.value = Resource.Idle
     }
 
+    /**
+     * Resets auth request state back to [Resource.Idle].
+     */
     fun resetState() {
         _authState.value = Resource.Idle
     }

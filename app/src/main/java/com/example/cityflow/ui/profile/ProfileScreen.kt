@@ -30,13 +30,19 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * Οθόνη Προφίλ Χρήστη (User Profile Screen).
+ * User Profile Screen.
  *
- * Περιλαμβάνει:
- * - Προβολή βασικών στοιχείων (Avatar, Ονοματεπώνυμο, Email, Ρόλος, Ημερομηνία εγγραφής).
- * - Δυνατότητα επεξεργασίας και άμεσης αποθήκευσης του ονοματεπωνύμου.
- * - Ρόλο χρήστη με αναλυτικό badge και περιγραφή δικαιωμάτων.
- * - Γρήγορες συντομεύσεις: Προβολή Ιστορικού & Στατιστικών, Ρυθμίσεις εφαρμογής και Αποσύνδεση.
+ * Features:
+ * - Displays user identity, avatar initial, role badge, email, and registration date.
+ * - Allows in-place editing and persistence of full display name.
+ * - Explains active account permissions based on authorization role.
+ * - Quick actions for Analytics & Incident History, Settings, and Account Sign Out.
+ *
+ * @param currentUser Currently authenticated user.
+ * @param onNavigateBack Callback to navigate back to previous screen.
+ * @param onNavigateToStats Callback opening the statistics and history screen.
+ * @param onUpdateProfile Callback to update the user's name in ViewModel.
+ * @param onLogout Callback to sign out the user.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -30,6 +30,21 @@ import com.example.cityflow.ui.common.SettingsDialog
 import com.example.cityflow.ui.common.localizedTitle
 import com.example.cityflow.ui.common.localizedAdvice
 
+/**
+ * System Administrator Dashboard Screen.
+ *
+ * Implements administrative controls for CityFlow:
+ * - Real-time tuning of prioritization ranking weights (w1: Count, w2: Proximity, w3: Severity).
+ * - Live inspection of system defaults (cluster radius = 50m, temporal window = 30min).
+ * - Overview of all registered incident categories, their base severities, and proximity alert radii.
+ * - Quick jump to Employee Dashboard, Statistics, Profile, and Settings.
+ *
+ * @param currentUser The currently signed-in administrator.
+ * @param onNavigateToEmployeeDashboard Navigation callback to open the staff dashboard.
+ * @param onNavigateToStats Navigation callback to open statistics.
+ * @param onNavigateToProfile Navigation callback to open profile.
+ * @param onLogout Callback for signing out.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboardScreen(
@@ -41,6 +56,7 @@ fun AdminDashboardScreen(
 ) {
     val context = LocalContext.current
 
+    // Mutable state sliders for algorithm weights
     var wCount by remember { mutableFloatStateOf(PriorityCalculator.weightCount.toFloat()) }
     var wProximity by remember { mutableFloatStateOf(PriorityCalculator.weightProximity.toFloat()) }
     var wSeverity by remember { mutableFloatStateOf(PriorityCalculator.weightSeverity.toFloat()) }

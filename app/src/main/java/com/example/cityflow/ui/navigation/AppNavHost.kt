@@ -20,6 +20,16 @@ import com.example.cityflow.ui.employee.EmployeeDashboardScreen
 import com.example.cityflow.ui.profile.ProfileScreen
 import com.example.cityflow.ui.stats.StatsScreen
 
+/**
+ * Root navigation graph host for the CityFlow application.
+ *
+ * Configures the Compose Navigation [NavHost], defines destination routes,
+ * manages back-stack transitions, and routes users to appropriate landing screens
+ * depending on their authorization role (Admin, Employee, Citizen).
+ *
+ * @param navController The Navigation controller managing destination transitions.
+ * @param authViewModel Shared ViewModel managing authentication state and current user info.
+ */
 @Composable
 fun AppNavHost(
     navController: NavHostController = rememberNavController(),
@@ -27,6 +37,13 @@ fun AppNavHost(
 ) {
     val currentUser by authViewModel.currentUser.collectAsState()
 
+    /**
+     * Redirects the user to their corresponding home dashboard based on role:
+     * - Admins -> Admin Dashboard
+     * - Municipality Employees -> Employee Dashboard
+     * - Citizens -> Citizen Home Feed & Map
+     * Clears the Login screen from the back-stack so pressing 'Back' exits or behaves correctly.
+     */
     fun navigateForUser(user: User) {
         when {
             user.isAdmin -> {
@@ -51,6 +68,7 @@ fun AppNavHost(
         navController = navController,
         startDestination = Screen.Login.route
     ) {
+        // --- Login Screen ---
         composable(Screen.Login.route) {
             LoginScreen(
                 viewModel = authViewModel,
@@ -64,6 +82,7 @@ fun AppNavHost(
             )
         }
 
+        // --- Registration Screen ---
         composable(Screen.Register.route) {
             RegisterScreen(
                 viewModel = authViewModel,
@@ -77,6 +96,7 @@ fun AppNavHost(
             )
         }
 
+        // --- Citizen Main Feed & Map ---
         composable(Screen.CitizenHome.route) {
             CitizenHomeScreen(
                 currentUser = currentUser,
@@ -98,6 +118,7 @@ fun AppNavHost(
             )
         }
 
+        // --- Report Submission Screen ---
         composable(Screen.SubmitReport.route) {
             SubmitReportScreen(
                 currentUser = currentUser,
@@ -110,6 +131,7 @@ fun AppNavHost(
             )
         }
 
+        // --- Municipality Employee Dashboard ---
         composable(Screen.EmployeeDashboard.route) {
             EmployeeDashboardScreen(
                 currentUser = currentUser,
@@ -131,6 +153,7 @@ fun AppNavHost(
             )
         }
 
+        // --- Administrator Configuration Dashboard ---
         composable(Screen.AdminDashboard.route) {
             AdminDashboardScreen(
                 currentUser = currentUser,
@@ -152,6 +175,7 @@ fun AppNavHost(
             )
         }
 
+        // --- Analytics & Statistics Screen ---
         composable(Screen.Stats.route) {
             StatsScreen(
                 currentUser = currentUser,
@@ -161,6 +185,7 @@ fun AppNavHost(
             )
         }
 
+        // --- User Profile & Account Settings Screen ---
         composable(Screen.Profile.route) {
             ProfileScreen(
                 currentUser = currentUser,

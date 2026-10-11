@@ -12,7 +12,10 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 /**
- * Αναπαριστά ένα κοντινό συμβάν μαζί με την υπολογισμένη απόσταση από τον πολίτη.
+ * Represents a nearby incident alert paired with its calculated distance (in meters) from the user.
+ *
+ * @property report The incident report.
+ * @property distanceMeters Real-time great-circle distance in meters.
  */
 data class NearbyAlertItem(
     val report: Report,
@@ -20,38 +23,46 @@ data class NearbyAlertItem(
 )
 
 /**
- * ViewModel για την αρχική οθόνη του Πολίτη (Citizen Flow).
+ * ViewModel for the Citizen landing feed and map overview (Citizen Flow).
  *
- * Διαχειρίζεται:
- * - Την τρέχουσα τοποθεσία GPS του χρήστη
- * - Real-time ροή επικυρωμένων αναφορών από το Firestore
- * - Αυτόματο υπολογισμό χωρικής εγγύτητας και φιλτράρισμα βάσει της ακτίνας κάθε κατηγορίας
- * - Αποστολή τοπικών ειδοποιήσεων Android (Heads-up Notifications) όταν εντοπίζονται νέα κοντινά προβλήματα
+ * Responsibilities:
+ * - Tracks user GPS location and geocoded street address.
+ * - Subscribes to real-time incident reports stream from Firestore.
+ * - Computes dynamic spatial proximity and filters active incidents within each category's radius.
+ * - Dispatches local Android notifications (Heads-up Alerts) when approaching nearby hazards.
+ * - Surfaces recent public resolution announcements.
  */
 class CitizenHomeViewModel(
     private val reportRepository: ReportRepository = ReportRepository()
 ) : ViewModel() {
 
     private val _userLatitude = MutableStateFlow<Double?>(null)
+    /** User's current GPS latitude. */
     val userLatitude: StateFlow<Double?> = _userLatitude.asStateFlow()
 
     private val _userLongitude = MutableStateFlow<Double?>(null)
+    /** User's current GPS longitude. */
     val userLongitude: StateFlow<Double?> = _userLongitude.asStateFlow()
 
     private val _userAddress = MutableStateFlow("")
+    /** Geocoded human-readable location address string. */
     val userAddress: StateFlow<String> = _userAddress.asStateFlow()
 
     private val _isLocating = MutableStateFlow(false)
+    /** Loading indicator state for GPS acquisition. */
     val isLocating: StateFlow<Boolean> = _isLocating.asStateFlow()
 
     private val _locationError = MutableStateFlow<String?>(null)
+    /** Error message if GPS location lookup fails. */
     val locationError: StateFlow<String?> = _locationError.asStateFlow()
 
-    // Real-time ροή όλων των αναφορών από το Firestore
+    // Internal cache of all reports received from Firestore
     private val _allReports = MutableStateFlow<List<Report>>(emptyList())
     val isLoadingReports = MutableStateFlow(true)
 
-    // Λίστα κοντινών ειδοποιήσεων υπολογισμένη σε πραγματικό χρόνο
+    /**
+     * Dynamically computed list of nearby alerts within notification radius, sorted closest first.
+     */
     val nearbyAlerts: StateFlow<List<NearbyAlertItem>> = combine(
         _allReports,
         _userLatitude,
@@ -61,7 +72,7 @@ class CitizenHomeViewModel(
             emptyList()
         } else {
             reports.mapNotNull { report ->
-                // Μόνο επικυρωμένες ή σε εξέλιξη αναφορές
+                // Filter only acknowledged/active reports
                 val isActive = report.status == ReportStatus.VERIFIED.name ||
                         report.status == ReportStatus.IN_PROGRESS.name
                 if (!isActive) return@mapNotNull null
@@ -84,11 +95,13 @@ class CitizenHomeViewModel(
                 } else {
                     null
                 }
-            }.sortedBy { it.distanceMeters } // Πιο κοντινά πρώτα
+            }.sortedBy { it.distanceMeters } // Ascending distance (nearest first)
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // Λίστα πρόσφατων ανακοινώσεων επίλυσης προβλημάτων
+    /**
+     * Feed of the 5 most recent officially resolved incidents featuring resolution announcements.
+     */
     val recentResolvedAnnouncements: StateFlow<List<Report>> = _allReports.map { reports ->
         reports.filter {
             it.status == ReportStatus.RESOLVED.name && it.resolutionAnnouncement.isNotBlank()
@@ -99,6 +112,9 @@ class CitizenHomeViewModel(
         observeReports()
     }
 
+    /**
+     * Subscribes to the real-time reports Flow from [ReportRepository].
+     */
     private fun observeReports() {
         viewModelScope.launch {
             reportRepository.getAllReportsFlow()
@@ -113,7 +129,12 @@ class CitizenHomeViewModel(
     }
 
     /**
-     * Ενημέρωση των συντεταγμένων του χρήστη και αποστολή ειδοποιήσεων για νέα συμβάντα.
+     * Updates the citizen's GPS coordinates and triggers proximity alert checks.
+     *
+     * @param lat Latitude in degrees.
+     * @param lon Longitude in degrees.
+     * @param address Optional reverse-geocoded address.
+     * @param context Application context for dispatching notifications.
      */
     fun setUserLocation(lat: Double, lon: Double, address: String = "", context: Context? = null) {
         _userLatitude.value = lat
@@ -122,7 +143,7 @@ class CitizenHomeViewModel(
         _isLocating.value = false
         _locationError.value = null
 
-        // Έλεγχος και αποστολή Push Notification αν δόθηκε context
+        // Trigger nearby proximity notifications if context is available
         if (context != null) {
             checkAndTriggerNotifications(context, lat, lon)
         }
@@ -141,7 +162,12 @@ class CitizenHomeViewModel(
     }
 
     /**
-     * Ελέγχει αν υπάρχουν νέα επικυρωμένα συμβάντα εντός ακτίνας και στέλνει ειδοποίηση Android.
+     * Iterates over active incidents, evaluating proximity against each incident's geofence radius,
+     * and shows a system notification if within range.
+     *
+     * @param context Application context.
+     * @param lat Citizen current latitude.
+     * @param lon Citizen current longitude.
      */
     fun checkAndTriggerNotifications(context: Context, lat: Double, lon: Double) {
         val currentReports = _allReports.value

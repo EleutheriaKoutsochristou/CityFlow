@@ -9,8 +9,8 @@ import com.example.cityflow.domain.PriorityCalculator
 import com.example.cityflow.util.AppSettings
 
 /**
- * Extension properties for Compose UI to dynamically display localized model titles
- * based on the active language in AppSettings.
+ * Extension properties for Jetpack Compose UI to dynamically render localized model titles
+ * based on the active language selected in [AppSettings].
  */
 val ReportCategory.localizedTitle: String
     @Composable
@@ -40,6 +40,13 @@ val PriorityCalculator.PriorityLevel.localizedTitle: String
         return getTitle(lang)
     }
 
+/**
+ * Resolves the practical safety advice of a report into the active language ("el" or "en").
+ * If the advice matches any default category advice, the corresponding translated advice is returned.
+ *
+ * @param lang ISO language code ("el" or "en").
+ * @return Localized practical advice string.
+ */
 fun com.example.cityflow.data.model.Report.getLocalizedAdvice(lang: String): String {
     val cat = reportCategory
 
@@ -62,8 +69,7 @@ fun com.example.cityflow.data.model.Report.getLocalizedAdvice(lang: String): Str
 }
 
 /**
- * Επιστρέφει την πρακτική οδηγία της αναφοράς μεταφρασμένη στη γλώσσα της εφαρμογής
- * εφόσον αντιστοιχεί σε προεπιλεγμένη οδηγία κατηγορίας.
+ * Compose extension property returning the translated practical advice for a report.
  */
 val com.example.cityflow.data.model.Report.localizedAdvice: String
     @Composable
@@ -205,8 +211,8 @@ fun com.example.cityflow.data.model.Report.getLocalizedDescription(lang: String)
 }
 
 /**
- * Επιστρέφει την περιγραφή της αναφοράς μεταφρασμένη στη γλώσσα της εφαρμογής
- * βάσει λεξικού όρων, τίτλων κατηγοριών ή αναγνώρισης λέξεων-κλειδιών.
+ * Compose extension property returning the translated description of a report,
+ * looking up common keywords, dictionary terms, and predefined incident phrases.
  */
 val com.example.cityflow.data.model.Report.localizedDescription: String
     @Composable

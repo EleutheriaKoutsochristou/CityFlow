@@ -10,6 +10,9 @@ import com.example.cityflow.util.AppSettings
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
+/**
+ * Filter options for the municipal staff incident queue.
+ */
 enum class EmployeeReportFilter {
     ALL,
     SUBMITTED,
@@ -20,15 +23,24 @@ enum class EmployeeReportFilter {
     REJECTED
 }
 
+/**
+ * Sorting criteria for municipal staff incident queue.
+ */
 enum class EmployeeReportSort {
+    /** Sort by descending algorithmic PriorityScore (most urgent incidents first) */
     PRIORITY_DESC,
+    /** Sort by descending chronological timestamp (newest submissions first) */
     DATE_DESC
 }
 
 /**
- * ViewModel για τον Πίνακα Ελέγχου του Υπαλλήλου (Employee Flow).
- * Διαχειρίζεται τη real-time ροή των αναφορών, τα φίλτρα, την ταξινόμηση
- * και τις ενέργειες επικύρωσης, αλλαγής κατάστασης και απόρριψης.
+ * ViewModel for the Municipal Employee Dashboard (Employee Flow).
+ *
+ * Responsibilities:
+ * - Subscribes to real-time incident reports stream from Firestore.
+ * - Provides dynamic status filtering (All, Submitted, Under Review, Verified, In Progress, Resolved, Rejected).
+ * - Applies sorting by Priority Score (default) or chronological order.
+ * - Handles status transitions (Verify, Put in Progress, Resolve, Reject) with associated dialog inputs.
  */
 class EmployeeDashboardViewModel(
     private val reportRepository: ReportRepository = ReportRepository()
@@ -46,6 +58,9 @@ class EmployeeDashboardViewModel(
     private val _actionState = MutableStateFlow<Resource<String>>(Resource.Idle)
     val actionState: StateFlow<Resource<String>> = _actionState.asStateFlow()
 
+    /**
+     * Combined reactive list of incident reports matching selected filter and sort order.
+     */
     val displayedReports: StateFlow<List<Report>> = combine(
         _rawReports,
         _selectedFilter,
@@ -83,6 +98,9 @@ class EmployeeDashboardViewModel(
         observeReports()
     }
 
+    /**
+     * Observes real-time reports from [ReportRepository].
+     */
     private fun observeReports() {
         viewModelScope.launch {
             reportRepository.getAllReportsFlow()
@@ -96,16 +114,29 @@ class EmployeeDashboardViewModel(
         }
     }
 
+    /**
+     * Updates active status filter.
+     */
     fun setFilter(filter: EmployeeReportFilter) {
         _selectedFilter.value = filter
     }
 
+    /**
+     * Updates sort ordering.
+     */
     fun setSort(sort: EmployeeReportSort) {
         _selectedSort.value = sort
     }
 
     /**
-     * Ενημέρωση κατάστασης αναφοράς (Επικύρωση, Σε Εξέλιξη, Επίλυση, Απόρριψη).
+     * Updates the status of an incident report in Firestore.
+     *
+     * @param reportId Unique report document ID.
+     * @param newStatus New target [ReportStatus].
+     * @param verifiedBy UID or name of municipal staff performing the action.
+     * @param practicalAdvice Optional custom advice provided during verification.
+     * @param rejectionReason Optional justification entered if rejecting.
+     * @param resolutionAnnouncement Optional public announcement entered upon resolving.
      */
     fun updateStatus(
         reportId: String,
@@ -158,6 +189,9 @@ class EmployeeDashboardViewModel(
         }
     }
 
+    /**
+     * Clears action notification message state.
+     */
     fun clearActionState() {
         _actionState.value = Resource.Idle
     }

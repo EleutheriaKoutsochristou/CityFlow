@@ -5,13 +5,15 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 
 /**
- * Βοηθητική κλάση για τον προληπτικό έλεγχο συνδεσιμότητας στο διαδίκτυο (Network Connectivity Check).
+ * Utility helper for verifying device network connectivity before executing remote data operations.
  */
 object NetworkUtils {
 
     /**
-     * Ελέγχει αν η συσκευή είναι συνδεδεμένη σε ενεργό δίκτυο (Wi-Fi, Cellular, Ethernet)
-     * με δυνατότητα πρόσβασης στο διαδίκτυο.
+     * Checks if the device has an active internet connection through Wi-Fi, Cellular, or Ethernet.
+     *
+     * @param context Application or Activity context.
+     * @return True if connected with confirmed internet capability, false otherwise.
      */
     fun isNetworkAvailable(context: Context): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
@@ -20,6 +22,7 @@ object NetworkUtils {
         val activeNetwork = connectivityManager.activeNetwork ?: return false
         val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
 
+        // Ensure active network explicitly provides internet capability
         return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 }

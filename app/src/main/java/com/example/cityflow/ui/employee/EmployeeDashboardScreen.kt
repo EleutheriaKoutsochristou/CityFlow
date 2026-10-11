@@ -42,12 +42,22 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * Πίνακας Ελέγχου Υπαλλήλου (Employee Flow).
- * Περιλαμβάνει:
- * - Real-time λίστα όλων των αναφορών
- * - Φίλτρα ανά κατάσταση (Όλες, Προς Έλεγχο, Ενεργές, Επιλυμένες) & Ταξινόμηση
- * - Badges προτεραιότητας («Κρίσιμη», «Υψηλή», «Μέτρια», «Χαμηλή») με σκορ
- * - Κουμπιά επικύρωσης (Verify), αλλαγής κατάστασης (In Progress, Resolved) και απόρριψης (Reject)
+ * Municipal Employee Dashboard Screen (Employee Flow).
+ *
+ * Implements:
+ * - Real-time stream of all submitted incident reports.
+ * - Multi-criteria status filtering (All, Submitted, Under Review, Verified, In Progress, Resolved, Rejected).
+ * - Priority-based sorting (highest priority score first) or chronological sorting.
+ * - Algorithmic priority badges (Critical, High, Medium, Low) displaying numeric score and cluster size.
+ * - Action buttons for status transitions (Verify, In Progress, Resolve, Reject) with dialogs for rejection justification and resolution announcements.
+ * - Map launcher intent button for opening incident coordinates in external map applications.
+ *
+ * @param currentUser Signed-in municipal employee or administrator.
+ * @param onNavigateToAdmin Navigation callback to administrator dashboard.
+ * @param onNavigateToStats Navigation callback to statistics screen.
+ * @param onNavigateToProfile Navigation callback to profile screen.
+ * @param onLogout Callback for signing out.
+ * @param viewModel ViewModel managing dashboard filtering and status updates.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

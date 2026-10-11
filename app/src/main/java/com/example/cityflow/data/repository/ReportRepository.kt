@@ -14,8 +14,9 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
 /**
- * Repository για τη διαχείριση των αναφορών (Reports) στο Firestore.
- * Υποστηρίζει Real-time συγχρονισμό μέσω Flow για άμεση ενημέρωση όλων των χρηστών.
+ * Repository handling Incident Reports lifecycle, persistence, and synchronization in Cloud Firestore.
+ * Supports real-time updates via Kotlin Coroutines [Flow] (`callbackFlow`) to keep Citizen,
+ * Employee, and Statistics screens synchronized instantly across all connected clients.
  */
 class ReportRepository(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -24,10 +25,14 @@ class ReportRepository(
     private val reportsCollection = firestore.collection("reports")
 
     /**
-     * Υποβολή νέας αναφοράς:
-     * 1. Ανακτά τις υπάρχουσες πρόσφατες αναφορές.
-     * 2. Υπολογίζει το αρχικό PriorityScore μέσω του PriorityCalculator.
-     * 3. Αποθηκεύει την αναφορά στο Firestore.
+     * Submits a new incident report:
+     * 1. Fetches recent reports in the same category to compute spatial/temporal correlation.
+     * 2. Checks duplicate submission rules (prevents user from reporting same issue twice within 30 min / 50m).
+     * 3. Computes algorithmic priority score using [PriorityCalculator].
+     * 4. Atomically commits the new report and updates correlated cluster members in a Firestore batch write.
+     *
+     * @param report The new report data.
+     * @return [Resource.Success] with the generated report document ID, or [Resource.Error].
      */
     suspend fun submitReport(report: Report): Resource<String> {
         return try {
@@ -39,7 +44,7 @@ class ReportRepository(
 
             val docId = docRef.id
 
-            // Ανάκτηση πρόσφατων αναφορών για τον υπολογισμό του PriorityScore
+            // Retrieve recent reports in the same category to detect clustering and compute priority score
             val recentSnapshots = reportsCollection
                 .whereEqualTo("category", report.category)
                 .get()
@@ -53,7 +58,7 @@ class ReportRepository(
                 }
             }
 
-            // Έλεγχος αποφυγής διπλότυπης αναφοράς από τον ίδιο χρήστη (Option B)
+            // Guard against duplicate reports from the same user within 30 minutes and 50 meters
             val hasDuplicateFromSameUser = existingReports.any { existing ->
                 existing.userId.isNotBlank() &&
                 existing.userId == report.userId &&
@@ -74,7 +79,7 @@ class ReportRepository(
                 )
             }
 
-            // Εύρεση παρόμοιων αναφορών και υπολογισμός σκορ
+            // Identify similar reports in the same spatio-temporal cluster and calculate priority score
             val similarReports = PriorityCalculator.findSimilarReports(report, existingReports)
             val calculatedScore = PriorityCalculator.calculateScore(report, existingReports)
 
@@ -84,8 +89,7 @@ class ReportRepository(
                 similarReportsCount = similarReports.size + 1
             )
 
-            // Ατομική αποθήκευση της νέας αναφοράς και ενημέρωση των παλαιότερων
-            // παρόμοιων αναφορών του ίδιου cluster (πλήθος και PriorityScore)
+            // Atomic batch write: write new report and update score/count of all clustered neighbors
             val batch = firestore.batch()
             batch.set(docRef, finalReport)
 
@@ -115,8 +119,8 @@ class ReportRepository(
     }
 
     /**
-     * Real-time ροή (Flow) όλων των αναφορών ταξινομημένων κατά ημερομηνία (νεότερες πρώτα).
-     * Ιδανικό για την οθόνη του υπαλλήλου.
+     * Real-time [Flow] stream of all reports ordered by descending timestamp (newest first).
+     * Used primarily by the Employee Dashboard and Admin screen.
      */
     fun getAllReportsFlow(): Flow<List<Report>> = callbackFlow {
         val listener = reportsCollection
@@ -143,7 +147,9 @@ class ReportRepository(
     }
 
     /**
-     * Real-time ροή (Flow) των αναφορών ενός συγκεκριμένου χρήστη (για την οθόνη ιστορικού).
+     * Real-time [Flow] stream of reports created by a specific user (for My Reports / history).
+     *
+     * @param userId The author's user ID.
      */
     fun getUserReportsFlow(userId: String): Flow<List<Report>> = callbackFlow {
         val listener = reportsCollection
@@ -169,7 +175,15 @@ class ReportRepository(
     }
 
     /**
-     * Ενημέρωση κατάστασης αναφοράς από τον υπάλληλο (Επικύρωση, Απόρριψη, Επίλυση κ.λπ.).
+     * Updates the status of an incident report (e.g. Verified, In Progress, Resolved, Rejected).
+     * Records associated metadata such as reviewer, resolution announcement, or rejection reason.
+     *
+     * @param reportId Unique Firestore document ID.
+     * @param newStatus New target [ReportStatus].
+     * @param verifiedBy UID/name of verifying staff member.
+     * @param practicalAdvice Optional customized safety advice for citizens.
+     * @param rejectionReason Justification reason if status is REJECTED.
+     * @param resolutionAnnouncement Explanation message if status is RESOLVED.
      */
     suspend fun updateReportStatus(
         reportId: String,
@@ -216,8 +230,12 @@ class ReportRepository(
     }
 
     /**
-     * Φιλτράρισμα επικυρωμένων αναφορών που βρίσκονται εντός της ακτίνας ειδοποίησης
-     * από την τρέχουσα τοποθεσία του χρήστη.
+     * Filters active verified reports that fall within their designated alert radius from the user's current GPS coordinates.
+     *
+     * @param reports Candidate reports list.
+     * @param userLat Current latitude of the citizen.
+     * @param userLon Current longitude of the citizen.
+     * @return List of nearby active reports.
      */
     fun filterNearbyVerifiedReports(
         reports: List<Report>,
@@ -225,7 +243,7 @@ class ReportRepository(
         userLon: Double
     ): List<Report> {
         return reports.filter { report ->
-            // Μόνο επικυρωμένες ή σε εξέλιξη αναφορές
+            // Include only active reports (VERIFIED or IN_PROGRESS)
             val isActive = report.status == ReportStatus.VERIFIED.name ||
                     report.status == ReportStatus.IN_PROGRESS.name
 
@@ -248,7 +266,9 @@ class ReportRepository(
     }
 
     /**
-     * Διαγραφή αναφοράς (π.χ. από διαχειριστή).
+     * Deletes an incident report permanently from Firestore.
+     *
+     * @param reportId Unique document ID.
      */
     suspend fun deleteReport(reportId: String): Resource<Unit> {
         return try {

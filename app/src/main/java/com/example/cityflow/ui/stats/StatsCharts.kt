@@ -32,34 +32,37 @@ import java.util.Locale
 import kotlin.math.max
 
 /**
- * Χρωματική παλέτα για τις κατηγορίες προβλημάτων.
+ * Resolves color palette mappings for incident categories in analytics charts.
  */
 fun getCategoryColor(category: ReportCategory): Color {
     return when (category) {
-        ReportCategory.RAMP_BLOCKED -> Color(0xFFE53935)          // Κόκκινο (Εμπόδιο ΑμεΑ)
-        ReportCategory.MICROMOBILITY_OBSTACLE -> Color(0xFFFB8C00) // Πορτοκαλί (Πατίνι/Ποδήλατο)
-        ReportCategory.POTHOLE -> Color(0xFFFFB300)                // Κεχριμπάρι (Λακκούβα)
-        ReportCategory.ROAD_WORK -> Color(0xFF8E24AA)              // Μωβ (Έργα)
-        ReportCategory.TRAFFIC_LIGHT -> Color(0xFF1E88E5)           // Μπλε (Φανάρια)
-        ReportCategory.TRANSIT_OVERCROWDING -> Color(0xFF00ACC1)    // Cyan/Teal (Συγκοινωνία)
-        ReportCategory.OTHER -> Color(0xFF78909C)                   // Blue Grey (Άλλο)
+        ReportCategory.RAMP_BLOCKED -> Color(0xFFE53935)          // Red (PRM ramp / sidewalk)
+        ReportCategory.MICROMOBILITY_OBSTACLE -> Color(0xFFFB8C00) // Orange (Bike / scooter lane)
+        ReportCategory.POTHOLE -> Color(0xFFFFB300)                // Amber (Pothole / pavement)
+        ReportCategory.ROAD_WORK -> Color(0xFF8E24AA)              // Purple (Road work)
+        ReportCategory.TRAFFIC_LIGHT -> Color(0xFF1E88E5)           // Blue (Traffic signal)
+        ReportCategory.TRANSIT_OVERCROWDING -> Color(0xFF00ACC1)    // Cyan/Teal (Transit)
+        ReportCategory.OTHER -> Color(0xFF78909C)                   // Blue Grey (Other)
     }
 }
 
 /**
- * Χρώμα και συντομογραφία ανά κατάσταση αναφοράς.
+ * Resolves color mappings for report lifecycle statuses in analytics charts.
  */
 fun getStatusColor(status: ReportStatus): Color {
     return when (status) {
-        ReportStatus.SUBMITTED -> Color(0xFFFFA726)   // Πορτοκαλί
-        ReportStatus.VERIFIED -> Color(0xFF42A5F5)    // Μπλε
-        ReportStatus.IN_PROGRESS -> Color(0xFFAB47BC) // Μωβ
-        ReportStatus.RESOLVED -> Color(0xFF66BB6A)    // Πράσινο
-        ReportStatus.REJECTED -> Color(0xFFEF5350)    // Κόκκινο
-        ReportStatus.UNDER_REVIEW -> Color(0xFF29B6F6)
+        ReportStatus.SUBMITTED -> Color(0xFFFFA726)   // Orange
+        ReportStatus.VERIFIED -> Color(0xFF42A5F5)    // Blue
+        ReportStatus.IN_PROGRESS -> Color(0xFFAB47BC) // Purple
+        ReportStatus.RESOLVED -> Color(0xFF66BB6A)    // Green
+        ReportStatus.REJECTED -> Color(0xFFEF5350)    // Red
+        ReportStatus.UNDER_REVIEW -> Color(0xFF29B6F6) // Light Blue
     }
 }
 
+/**
+ * Returns abbreviated status strings suitable for compact horizontal chart axis labels.
+ */
 fun getStatusShortLabel(status: ReportStatus, isEnglish: Boolean = false): String {
     return if (isEnglish) {
         when (status) {
@@ -83,7 +86,12 @@ fun getStatusShortLabel(status: ReportStatus, isEnglish: Boolean = false): Strin
 }
 
 /**
- * 1. Donut Chart Κατανομής Κατηγοριών.
+ * Interactive Donut Chart card displaying the category distribution breakdown of city incidents.
+ * Features animated sweep angle arcs drawn on a Compose [Canvas] with centered incident count.
+ *
+ * @param breakdown List of calculated category metrics.
+ * @param totalReports Total number of reports recorded.
+ * @param modifier Composable modifier.
  */
 @Composable
 fun CategoryDonutChartCard(
@@ -242,7 +250,10 @@ fun CategoryDonutChartCard(
 }
 
 /**
- * 2. Bar Chart Καταστάσεων Αναφορών (Incident Status Funnel).
+ * Animated Vertical Bar Chart card representing the lifecycle status distribution funnel of incidents.
+ *
+ * @param statusBreakdown Computed status counts and percentage metrics.
+ * @param modifier Composable modifier.
  */
 @Composable
 fun StatusBarChartCard(

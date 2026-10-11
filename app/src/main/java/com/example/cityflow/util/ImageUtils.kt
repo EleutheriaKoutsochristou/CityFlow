@@ -11,14 +11,19 @@ import android.util.Base64
 import java.io.ByteArrayOutputStream
 
 /**
- * Βοηθητική κλάση για επεξεργασία και συμπίεση εικόνων.
- * Μετατρέπει εικόνες σε Base64 για άμεση αποθήκευση στο Firestore
- * με αυτόματο resize ώστε να μην επιβαρύνεται η μνήμη ή το δίκτυο.
+ * Utility helper for image manipulation, compression, and format encoding.
+ * Converts captured photos or selected gallery images into compact Base64 strings
+ * for direct document storage within Cloud Firestore while preventing memory spikes.
  */
 object ImageUtils {
 
     /**
-     * Μετατροπή Bitmap σε Base64 string με μέγιστη διάσταση και συμπίεση JPEG.
+     * Resizes and compresses a [Bitmap] into a compact Base64 JPEG string.
+     *
+     * @param bitmap Source bitmap to compress and encode.
+     * @param maxDimension Maximum bounding width or height in pixels (default 800px).
+     * @param quality JPEG compression quality factor between 0 and 100 (default 75%).
+     * @return Base64-encoded string without line wrapping.
      */
     fun bitmapToBase64(
         bitmap: Bitmap,
@@ -33,7 +38,10 @@ object ImageUtils {
     }
 
     /**
-     * Μετατροπή Base64 string σε Bitmap.
+     * Decodes a Base64 string back into an Android [Bitmap].
+     *
+     * @param base64Str Base64 encoded image string.
+     * @return Decoded [Bitmap] or null if decoding fails.
      */
     fun base64ToBitmap(base64Str: String): Bitmap? {
         return try {
@@ -45,7 +53,11 @@ object ImageUtils {
     }
 
     /**
-     * Ανάκτηση Bitmap από Uri (π.χ. από Photo Picker / Gallery).
+     * Loads and decodes a [Bitmap] from a given Android content [Uri] (e.g. from PhotoPicker or MediaStore).
+     *
+     * @param context Application or Activity context.
+     * @param uri Target content URI.
+     * @return Decoded [Bitmap] or null if reading fails.
      */
     fun uriToBitmap(context: Context, uri: Uri): Bitmap? {
         return try {
@@ -64,7 +76,11 @@ object ImageUtils {
     }
 
     /**
-     * Αναλογική σμίκρυνση διαστάσεων του Bitmap.
+     * Proportionally scales down a bitmap such that its largest dimension does not exceed [maxDimension].
+     *
+     * @param realImage Original bitmap.
+     * @param maxDimension Maximum allowed dimension.
+     * @return Proportionally scaled [Bitmap] or original if already within limits.
      */
     private fun scaleDownBitmap(realImage: Bitmap, maxDimension: Int): Bitmap {
         val width = realImage.width
@@ -79,9 +95,11 @@ object ImageUtils {
         val targetHeight: Int
 
         if (ratio > 1.0f) {
+            // Landscape orientation
             targetWidth = maxDimension
             targetHeight = (maxDimension / ratio).toInt()
         } else {
+            // Portrait or square orientation
             targetHeight = maxDimension
             targetWidth = (maxDimension * ratio).toInt()
         }

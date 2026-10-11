@@ -9,28 +9,37 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.util.Locale
 
 /**
- * Διαχειριστής ρυθμίσεων εφαρμογής:
- * 1. Εναλλαγή Dark / Light Theme (με άμεση ενημέρωση Compose State)
- * 2. Εναλλαγή Γλώσσας (Ελληνικά / English μέσω AppCompatDelegate)
+ * Application-wide settings and preferences manager:
+ * 1. Dark / Light theme toggle (reactive Compose [StateFlow] backed by SharedPreferences).
+ * 2. In-app language switching (Greek "el" / English "en" using [AppCompatDelegate] and runtime locale overrides).
  */
 object AppSettings {
 
     private const val PREFS_NAME = "cityflow_app_settings"
-    private const val KEY_DARK_MODE = "dark_mode_setting" // -1: System, 0: Light, 1: Dark
+    private const val KEY_DARK_MODE = "dark_mode_setting" // -1: Follow system, 0: Force Light, 1: Force Dark
     private const val KEY_LANGUAGE = "selected_language"
 
+    /** State flow representing dark mode: true = Dark, false = Light, null = Follow System. */
     private val _isDarkMode = MutableStateFlow<Boolean?>(null)
     val isDarkMode: StateFlow<Boolean?> = _isDarkMode.asStateFlow()
 
+    /** State flow representing active language code ("el" or "en"). */
     private val _currentLanguage = MutableStateFlow("el")
     val currentLanguage: StateFlow<String> = _currentLanguage.asStateFlow()
 
     private var initialized = false
 
+    /**
+     * Initializes app settings from persistent [SharedPreferences].
+     * Configures default language and theme upon application startup.
+     *
+     * @param context Application or Activity context.
+     */
     fun init(context: Context) {
         if (initialized) return
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
+        // Read stored theme preference
         val darkVal = prefs.getInt(KEY_DARK_MODE, -1)
         _isDarkMode.value = when (darkVal) {
             1 -> true
@@ -38,6 +47,7 @@ object AppSettings {
             else -> null
         }
 
+        // Read stored locale preference, falling back to system or default Greek ("el")
         val savedLang = prefs.getString(KEY_LANGUAGE, null)
         val activeLang = if (savedLang != null) {
             val localeList = LocaleListCompat.forLanguageTags(savedLang)
@@ -58,13 +68,19 @@ object AppSettings {
     }
 
     /**
-     * Εναλλαγή Dark Mode (Light -> Dark -> Light).
+     * Toggles between Light and Dark mode.
      */
     fun toggleDarkMode(context: Context) {
         val current = _isDarkMode.value ?: false
         setDarkMode(context, !current)
     }
 
+    /**
+     * Persists and updates the dark mode state.
+     *
+     * @param context Application or Activity context.
+     * @param isDark True for Dark, false for Light, null for system default.
+     */
     fun setDarkMode(context: Context, isDark: Boolean?) {
         _isDarkMode.value = isDark
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -77,7 +93,11 @@ object AppSettings {
     }
 
     /**
-     * Αλλαγή γλώσσας εφαρμογής (π.χ. "el" ή "en").
+     * Persists and applies a new application language (e.g. "el" or "en").
+     * Updates default Java Locale and triggers [AppCompatDelegate] locale update.
+     *
+     * @param languageCode ISO language tag ("el" or "en").
+     * @param context Application or Activity context.
      */
     fun setLanguage(languageCode: String, context: Context) {
         _currentLanguage.value = languageCode

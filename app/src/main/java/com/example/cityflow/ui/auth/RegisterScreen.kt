@@ -30,6 +30,16 @@ import com.example.cityflow.data.model.Resource
 import com.example.cityflow.data.model.User
 import com.example.cityflow.data.model.UserRole
 
+/**
+ * New user registration screen.
+ *
+ * Allows citizens and municipal staff to register accounts with full name, email,
+ * password, and role selection ([UserRole.CITIZEN] or [UserRole.EMPLOYEE]).
+ *
+ * @param viewModel Shared [AuthViewModel] managing account registration.
+ * @param onNavigateBack Callback for popping back to the Login screen.
+ * @param onRegisterSuccess Callback invoked with the newly registered [User].
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
@@ -45,6 +55,7 @@ fun RegisterScreen(
 
     val authState by viewModel.authState.collectAsState()
 
+    // Automatically navigate when registration successfully completes
     LaunchedEffect(authState) {
         if (authState is Resource.Success) {
             onRegisterSuccess((authState as Resource.Success<User>).data)

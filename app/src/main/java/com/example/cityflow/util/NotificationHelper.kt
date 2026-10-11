@@ -20,27 +20,27 @@ import com.example.cityflow.ui.common.getLocalizedDescription
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Βοηθητική κλάση διαχείρισης τοπικών ειδοποιήσεων Android (Nearby Incident Alerts).
+ * Helper utility managing local Android system notifications (Nearby Incident Alerts).
  *
- * Υλοποιεί τις προδιαγραφές 4 & 5:
- * - Ειδοποιεί τον πολίτη όταν επικυρωμένο πρόβλημα βρίσκεται εντός της ακτίνας του.
- * - Περιλαμβάνει κατηγορία, απόσταση, πρακτική οδηγία («Αποφύγετε το σημείο» κ.λπ.)
- * - Αποτρέπει επαναλαμβανόμενες ενοχλήσεις για το ίδιο συμβάν μέσω tracking των IDs.
+ * Implements Proximity Alert specifications:
+ * - Alerts citizen when an active verified incident is within their category radius.
+ * - Displays category name, real-time distance, and safety/routing advice.
+ * - Deduplicates alerts to avoid multiple notifications for the same incident during a session.
  */
 object NotificationHelper {
 
     const val CHANNEL_ID = "cityflow_alerts_channel"
     private const val CHANNEL_NAME = "CityFlow Mobility Alerts"
-    private const val CHANNEL_DESC = "Ειδοποιήσεις για προβλήματα προσβασιμότητας και κινητικότητας κοντά σας"
+    private const val CHANNEL_DESC = "Notifications for accessibility and urban mobility incidents near your location"
 
     private const val PREFS_NAME = "cityflow_prefs"
     private const val KEY_ALERT_COUNT = "received_alerts_count"
 
-    // Καταγραφή των αναφορών για τις οποίες έχει ήδη σταλεί ειδοποίηση σε αυτή τη συνεδρία
+    // Concurrent thread-safe set tracking incident IDs already notified during the active session
     private val notifiedReportIds = ConcurrentHashMap.newKeySet<String>()
 
     /**
-     * Ανάκτηση του συνολικού πλήθους ειδοποιήσεων που έχουν ληφθεί στη συσκευή.
+     * Retrieves the total count of proximity notifications delivered to this device.
      */
     fun getReceivedAlertsCount(context: Context): Int {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -48,7 +48,7 @@ object NotificationHelper {
     }
 
     /**
-     * Αύξηση του μετρητή ληφθεισών ειδοποιήσεων.
+     * Increments the persistent counter of received proximity alerts.
      */
     fun incrementAlertCount(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -57,7 +57,7 @@ object NotificationHelper {
     }
 
     /**
-     * Δημιουργία NotificationChannel (απαραίτητο για Android 8.0+ / API 26+).
+     * Creates the Android notification channel required for Android 8.0+ (API level 26+).
      */
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -72,22 +72,28 @@ object NotificationHelper {
     }
 
     /**
-     * Εμφάνιση ειδοποίησης για επικυρωμένο συμβάν εντός ακτίνας.
+     * Dispatches a high-priority heads-up notification for an incident occurring within user proximity.
+     * Checks permissions, deduplicates previously notified IDs, formats localized text,
+     * and attaches an intent opening the main activity.
+     *
+     * @param context Application or Activity context.
+     * @param report Incident report details.
+     * @param distanceMeters Calculated physical distance to the incident in meters.
      */
     fun showNearbyAlertNotification(
         context: Context,
         report: Report,
         distanceMeters: Double
     ) {
-        // Έλεγχος αν έχει ήδη σταλεί ειδοποίηση για το συγκεκριμένο συμβάν
+        // Prevent duplicate alerts for the same report in the current session
         if (report.id.isNotBlank() && !notifiedReportIds.add(report.id)) {
             return
         }
 
-        // Καταγραφή της ληφθείσας ειδοποίησης για τα στατιστικά
+        // Record alert count for local device statistics
         incrementAlertCount(context)
 
-        // Έλεγχος άδειας POST_NOTIFICATIONS για Android 13+ (API 33+)
+        // Verify POST_NOTIFICATIONS permission on Android 13+ (API 33+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(
                     context,
@@ -123,7 +129,7 @@ object NotificationHelper {
             }
         }
 
-        // Intent για άνοιγμα της εφαρμογής κατά το πάτημα της ειδοποίησης
+        // PendingIntent to launch the application when the user taps the notification
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
@@ -149,7 +155,7 @@ object NotificationHelper {
     }
 
     /**
-     * Καθαρισμός του ιστορικού ειδοποιημένων αναφορών (π.χ. κατά το logout).
+     * Clears tracked notification history (e.g., when the user logs out).
      */
     fun clearNotifiedReports() {
         notifiedReportIds.clear()

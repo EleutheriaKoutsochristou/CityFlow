@@ -27,6 +27,16 @@ import com.example.cityflow.data.model.Resource
 import com.example.cityflow.data.model.User
 import com.example.cityflow.ui.common.SettingsDialog
 
+/**
+ * User authentication and login screen.
+ *
+ * Provides fields for Email and Password entry, visibility toggling,
+ * feedback error messaging, in-app settings (Language / Theme), and navigation to Registration.
+ *
+ * @param viewModel Shared [AuthViewModel] managing authentication state.
+ * @param onNavigateToRegister Navigation callback opening the user registration flow.
+ * @param onLoginSuccess Callback invoked with the authenticated [User] upon successful login.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
@@ -41,6 +51,7 @@ fun LoginScreen(
 
     val authState by viewModel.authState.collectAsState()
 
+    // Automatically navigate when login successfully resolves
     LaunchedEffect(authState) {
         if (authState is Resource.Success) {
             onLoginSuccess((authState as Resource.Success<User>).data)
