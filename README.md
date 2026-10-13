@@ -1,100 +1,104 @@
 # CityFlow 🏙️
 
+[![Language: Ελληνικά](https://img.shields.io/badge/Γλώσσα-Ελληνικά-blue.svg)](README.md)
+[![Language: English](https://img.shields.io/badge/Language-English-lightgrey.svg)](README_EN.md)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-purple.svg)](https://kotlinlang.org/)
 [![Android](https://img.shields.io/badge/Platform-Android%207.0%2B%20(API%2024%2B)-green.svg)](https://developer.android.com/)
 [![Compose](https://img.shields.io/badge/UI-Jetpack%20Compose%20%2F%20Material%203-blue.svg)](https://developer.android.com/jetpack/compose)
 [![Firebase](https://img.shields.io/badge/Backend-Cloud%20Firestore%20%26%20Auth-orange.svg)](https://firebase.google.com/)
-[![University](https://img.shields.io/badge/University%20of%20Piraeus-MSc%20Mobile%20Dev-red.svg)](https://www.cs.unipi.gr/)
+[![University](https://img.shields.io/badge/Πανεπιστήμιο%20Πειραιώς-MSc%20Mobile%20Dev-red.svg)](https://www.cs.unipi.gr/)
 
-**CityFlow** is a modern native Android application for **Smart Urban Mobility and Accessibility Management**, developed for the Mobile Development course at the **University of Piraeus (UniPi)**.
+> 🇬🇷 **Ελληνικά** | [🇬🇧 English Version](README_EN.md)
 
-The system connects citizens with municipal emergency dispatch and maintenance crews in real time. It automates incident prioritization, detects spatial/temporal report clusters, triggers geofenced proximity alerts, and provides a full lifecycle workflow for municipal issue resolution.
+Το **CityFlow** είναι μια σύγχρονη native εφαρμογή Android για την **Έξυπνη Αστική Κινητικότητα και Διαχείριση Προσβασιμότητας**, που αναπτύχθηκε στο πλαίσιο του μεταπτυχιακού μαθήματος *Ανάπτυξη Εφαρμογών για Κινητές Συσκευές* (Mobile Development) στο **Πανεπιστήμιο Πειραιώς (UniPi)**.
 
----
-
-## 📑 Table of Contents
-1. [Key Features by Role](#-key-features-by-role)
-2. [Prioritization Algorithm & Domain Logic](#-prioritization-algorithm--domain-logic)
-3. [Architecture & Design Patterns](#-architecture--design-patterns)
-4. [Demo & Evaluation Accounts](#-demo--evaluation-accounts)
-5. [Presentation Guide: Running on 2 Emulators](#-presentation-guide-running-on-2-emulators)
-6. [Tech Stack](#-tech-stack)
-7. [Project Structure](#-project-structure)
-8. [Setup & Execution](#-setup--execution)
+Η εφαρμογή συνδέει τους πολίτες με τις δημοτικές αρχές και τα τεχνικά συνεργεία σε πραγματικό χρόνο: αυτοματοποιεί τη διαλογή και προτεραιοποίηση αναφορών, ανιχνεύει χωροχρονικές ομαδοποιήσεις (clusters), αποστέλλει γεωγραφικές ειδοποιήσεις εγγύτητας (geofencing) και διαχειρίζεται πλήρως τον κύκλο ζωής των αστικών προβλημάτων.
 
 ---
 
-## 👥 Key Features by Role
-
-### 1. 🚶 Citizen Flow (`CITIZEN`)
-* **Incident Reporting:** Report urban accessibility issues (broken wheelchair ramps, potholes, faulty traffic lights, sidewalk obstructions, illegal parking) with:
-  * Camera photo capture (compressed Base64 storage).
-  * Automatic GPS geolocation with reverse street geocoding.
-  * Category-based inherent severity ratings.
-* **Proximity Alerts (Geo-fencing):** Real-time GPS location tracking calculates distance to verified nearby obstacles and alerts citizens when entering the danger zone.
-* **Incident History:** Track submitted reports and their real-time status transitions.
-* **Resolution Feed:** View public official resolution announcements published by city crews.
-* **Anti-Spam De-duplication:** Automatically prevents repeated submissions from the same user for the same issue within 30 minutes and 50 meters.
-
-### 2. 👷 Municipal Employee Flow (`EMPLOYEE`)
-* **Real-time Dispatch Queue:** Live Firestore feed (`callbackFlow`) displaying all submitted urban problems without pull-to-refresh.
-* **Dynamic Sorting:** Auto-ranked by calculated `PriorityScore` (most urgent first) or chronological order.
-* **Status Filtering:** Filter reports by `All`, `Submitted`, `Under Review`, `Verified`, `In Progress`, `Resolved`, or `Rejected`.
-* **Algorithmic Badges:** Visual severity badges (`Critical`, `High`, `Medium`, `Low`) displaying numeric score and clustered reports count.
-* **Workflow Transitions:**
-  * **Under Review:** Mark as being investigated.
-  * **Verify:** Acknowledge and attach customizable safety advice for citizens.
-  * **In Progress:** Mark active field crew work.
-  * **Resolve:** Mark resolved with an official public announcement.
-  * **Reject:** Reject invalid incidents with mandatory justification.
-* **External Maps Navigation:** Launch coordinates directly in Google Maps or external map providers.
-
-### 3. ⚙️ System Administrator Flow (`ADMIN`)
-* **Dynamic Algorithm Tuning:** Live sliders to calibrate prioritization weights ($w_1$: Count, $w_2$: Proximity, $w_3$: Severity) between `0.5` and `5.0`.
-* **Cross-Device Cloud Sync:** Weights are persisted in Cloud Firestore (`system_config/priority_weights`), broadcasting immediately to all connected devices.
-* **Retroactive Queue Recalculation:** Tapping *"Apply Parameters"* updates existing active reports via atomic Firestore batch writes, causing the Employee Dashboard to re-rank and update badges live.
-* **Categories & Notification Radii Oversight:** Inspect and verify base radii and severity scales for all incident types.
-* **Fast Navigation:** Quick-action shortcuts to Employee Dashboard, Analytics, and Settings.
-
-### 4. 📊 Analytics & Profile
-* **Role-Aware Statistics:** Breakdown of reports by status, category, resolution times, and operational triage metrics.
-* **Interactive Charts:** Category distribution and status progression charts.
-* **Bilingual Support (i18n):** 100% Greek (`el`) and English (`en`) support with instantaneous in-app language switching.
-* **Dark / Light Theme:** Native Material 3 theming with persistent user preferences.
+## 📑 Πίνακας Περιεχομένων
+1. [Βασικές Λειτουργίες ανά Ρόλο](#-βασικές-λειτουργίες-ανά-ρόλο)
+2. [Αλγόριθμος Προτεραιότητας & Επιχειρησιακή Λογική](#-αλγόριθμος-προτεραιότητας--επιχειρησιακή-λογική)
+3. [Αρχιτεκτονική & Σχεδιαστικά Πρότυπα](#-αρχιτεκτονική--σχεδιαστικά-πρότυπα)
+4. [Προκαθορισμένοι Λογαριασμοί Αξιολόγησης (Demo Accounts)](#-προκαθορισμένοι-λογαριασμοί-αξιολόγησης-demo-accounts)
+5. [Οδηγός Παρουσίασης: Εκτέλεση σε 2 Emulators](#-οδηγός-παρουσίασης-εκτέλεση-σε-2-emulators)
+6. [Τεχνολογικό Stack](#-τεχνολογικό-stack)
+7. [Δομή Έργου (Project Structure)](#-δομή-έργου-project-structure)
+8. [Εγκατάσταση & Εκτέλεση](#-εγκατάσταση--εκτέλεση)
 
 ---
 
-## 🧮 Prioritization Algorithm & Domain Logic
+## 👥 Βασικές Λειτουργίες ανά Ρόλο
 
-CityFlow implements a pure Kotlin domain model for objective urgency ranking:
+### 1. 🚶 Ροή Πολίτη (`CITIZEN`)
+* **Υποβολή Αναφοράς:** Καταγραφή εμποδίων προσβασιμότητας (αποκλεισμένες ράμπες ΑμεΑ, λακκούβες, βλάβες σηματοδοτών, παράνομη στάθμευση κ.ά.) με:
+  * Λήψη φωτογραφίας μέσω κάμερας (συμπιεσμένη αποθήκευση Base64).
+  * Αυτόματο εντοπισμό GPS και αντίστροφη γεωκωδικοποίηση (οδός/αριθμός).
+  * Εγγενή διαβάθμιση σοβαρότητας ανά κατηγορία.
+* **Ειδοποιήσεις Εγγύτητας (Geo-fencing):** Υπολογισμός απόστασης από επικυρωμένα εμπόδια σε πραγματικό χρόνο και προειδοποίηση του πολίτη όταν πλησιάζει στην ακτίνα κινδύνου.
+* **Προσωπικό Ιστορικό:** Παρακολούθηση της εξέλιξης των υποβληθεισών αναφορών και των αλλαγών κατάστασης.
+* **Ροή Επισήμων Ανακοινώσεων:** Προβολή δημόσιων ανακοινώσεων αποκατάστασης από τα συνεργεία του Δήμου.
+* **Μηχανισμός Αποφυγής Spam / Διπλοτύπων:** Αποτροπή πολλαπλών υποβολών για το ίδιο πρόβλημα από τον ίδιο χρήστη εντός ακτίνας 50 μέτρων και 30 λεπτών.
+
+### 2. 👷 Ροή Υπαλλήλου Δήμου (`EMPLOYEE`)
+* **Real-time Πίνακας Ελέγχου (Dispatch Queue):** Ζωντανή ροή Firestore (`callbackFlow`) με όλες τις υποβληθείσες αναφορές της πόλης χωρίς ανάγκη χειροκίνητης ανανέωσης.
+* **Δυναμική Ταξινόμηση:** Αυτόματη κατάταξη βάσει αλγοριθμικού `PriorityScore` (πιο επείγοντα πρώτα) ή χρονολογικής σειράς.
+* **Πολυκριτηριακό Φιλτράρισμα:** Φίλτρα κατάστασης (`Όλες`, `Υποβλήθηκε`, `Υπό Διερεύνηση`, `Επικυρώθηκε`, `Σε Εξέλιξη`, `Επιλύθηκε`, `Απορρίφθηκε`).
+* **Αλγοριθμικά Badges Σοβαρότητας:** Οπτικές ενδείξεις (`Κρίσιμη`, `Υψηλή`, `Μέτρια`, `Χαμηλή`) με εμφάνιση του ακριβούς σκορ και του πλήθους ομαδοποιημένων αναφορών.
+* **Διαχείριση Κύκλου Ζωής Αναφοράς:**
+  * **Υπό Διερεύνηση:** Έναρξη αυτοψίας.
+  * **Επικύρωση:** Επιβεβαίωση συμβάντος με δυνατότητα προσθήκης πρακτικής οδηγίας ασφαλείας.
+  * **Σε Εξέλιξη:** Ανάθεση σε συνεργείο αποκατάστασης.
+  * **Επίλυση:** Ολοκλήρωση εργασιών με επίσημη δημόσια ανακοίνωση.
+  * **Απόρριψη:** Απόρριψη άκυρων αναφορών με υποχρεωτική αιτιολόγηση.
+* **Πλοήγηση σε Εξωτερικούς Χάρτες:** Άμεσο άνοιγμα των συντεταγμένων του συμβάντος σε Google Maps ή άλλες εφαρμογές πλοήγησης.
+
+### 3. ⚙️ Ροή Διαχειριστή Συστήματος (`ADMIN`)
+* **Δυναμική Ρύθμιση Αλγορίθμου:** Διαδραστικά sliders για τη ρύθμιση των βαρών προτεραιότητας ($w_1$: Πλήθος, $w_2$: Εγγύτητα, $w_3$: Σοβαρότητα) στο εύρος `0.5` έως `5.0`.
+* **Cloud Συγχρονισμός σε Όλες τις Συσκευές:** Οι παράμετροι αποθηκεύονται στο Cloud Firestore (`system_config/priority_weights`) και μεταδίδονται αυτόματα σε κάθε ενεργή συσκευή.
+* **Αναδρομικός Επανυπολογισμός Ουράς (Retroactive Recalculation):** Με το πάτημα του κουμπιού *"Εφαρμογή Παραμέτρων"*, το σύστημα επανυπολογίζει άμεσα τα σκορ όλων των υφιστάμενων ενεργών αναφορών μέσω batch write, προκαλώντας ζωντανή ανακατάταξη και αλλαγή badges στο dashboard του υπαλλήλου.
+* **Εποπτεία Κατηγοριών & Ακτίνων:** Επιθεώρηση των προεπιλεγμένων ακτίνων ειδοποίησης και των βασικών δεικτών σοβαρότητας για κάθε τύπο συμβάντος.
+* **Γρήγορες Συντομεύσεις:** Άμεση μετάβαση στο Dashboard Υπαλλήλου, στα Στατιστικά και στις Ρυθμίσεις.
+
+### 4. 📊 Στατιστικά & Προφίλ
+* **Στατιστικά Προσαρμοσμένα ανά Ρόλο:** Συνολική εποπτεία κατανομής αναφορών, χρόνων απόκρισης και επιχειρησιακών δεικτών.
+* **Διαδραστικά Γραφήματα:** Κατανομή ανά κατηγορία συμβάντος και ποσοστά κατάστασης επίλυσης.
+* **Πλήρης Διγλωσσία (i18n):** 100% υποστήριξη Ελληνικών (`el`) και Αγγλικών (`en`) με άμεση εναλλαγή εντός της εφαρμογής.
+* **Σκοτεινό / Φωτεινό Θέμα:** Υποστήριξη Dark / Light Theme μέσω Material 3 με αποθήκευση προτιμήσεων χρήστη.
+
+---
+
+## 🧮 Αλγόριθμος Προτεραιότητας & Επιχειρησιακή Λογική
+
+Το CityFlow υλοποιεί ένα αμιγώς Kotlin domain μοντέλο για τον αντικειμενικό υπολογισμό της επείγουσας ανάγκης επέμβασης:
 
 $$P = w_1 \cdot \text{Count} + w_2 \cdot \text{ProximityScore} + w_3 \cdot \text{Severity}$$
 
-Where:
-* **$\text{Count}$:** Number of unique citizen accounts contributing to the incident cluster (prevents single-user inflation).
-* **$\text{ProximityScore}$:** Spatial density score ($0 \dots 10$) computed using the **Haversine formula** for reports within the cluster radius ($50\text{m}$).
-* **$\text{Severity}$:** Inherent danger rating ($1 \dots 5$) assigned to each category (e.g., *Broken Wheelchair Ramp* = 5).
-* **$w_1, w_2, w_3$:** Dynamic weights tuned in real time by the Administrator.
+Όπου:
+* **$\text{Count}$:** Πλήθος μοναδικών πολιτών που συνεισφέρουν στο cluster (αποτρέπει τεχνητή διόγκωση από έναν χρήστη).
+* **$\text{ProximityScore}$:** Δείκτης χωρικής πυκνότητας ($0 \dots 10$) υπολογισμένος μέσω του τύπου **Haversine** για αναφορές εντός της ακτίνας cluster ($50\text{m}$).
+* **$\text{Severity}$:** Εγγενής σοβαρότητα της κατηγορίας ($1 \dots 5$), π.χ. *Αποκλεισμένη Ράμπα ΑμεΑ* = 5.
+* **$w_1, w_2, w_3$:** Δυναμικά βάρη ρυθμιζόμενα σε πραγματικό χρόνο από τον Administrator.
 
-### Priority Tiers:
-| Score Range | Priority Tier | Badge Color |
+### Διαβαθμίσεις Προτεραιότητας:
+| Εύρος Σκορ | Επίπεδο Προτεραιότητας | Χρώμα Badge |
 | :--- | :--- | :--- |
-| $\ge 25.0$ | **CRITICAL (Κρίσιμη)** | Red |
-| $18.0 \dots 24.9$ | **HIGH (Υψηλή)** | Orange |
-| $12.0 \dots 17.9$ | **MEDIUM (Μέτρια)** | Amber / Yellow |
-| $< 12.0$ | **LOW (Χαμηλή)** | Blue |
+| $\ge 25.0$ | **CRITICAL (Κρίσιμη)** | Κόκκινο |
+| $18.0 \dots 24.9$ | **HIGH (Υψηλή)** | Πορτοκαλί |
+| $12.0 \dots 17.9$ | **MEDIUM (Μέτρια)** | Κίτρινο / Κεχριμπάρι |
+| $< 12.0$ | **LOW (Χαμηλή)** | Μπλε |
 
 ---
 
-## 🏗️ Architecture & Design Patterns
+## 🏗️ Αρχιτεκτονική & Σχεδιαστικά Πρότυπα
 
-The codebase strictly adheres to **Clean Architecture**, **MVVM (Model-View-ViewModel)**, and **Unidirectional Data Flow (UDF)**:
+Η εφαρμογή ακολουθεί αυστηρά τις αρχές του **Clean Architecture**, του **MVVM (Model-View-ViewModel)** και της **Μονοκατευθυντικής Ροής Δεδομένων (Unidirectional Data Flow - UDF)**:
 
 ```mermaid
 graph TD
     subgraph UI_Layer ["UI Layer (Jetpack Compose)"]
         Screens["Screens (CitizenHome, EmployeeDashboard, AdminDashboard, Stats)"]
-        Nav["Navigation Component (AppNavHost & Screen)"]
+        Nav["Navigation Component (AppNavHost & Screen Sealed Class)"]
     end
 
     subgraph ViewModel_Layer ["ViewModel Layer"]
@@ -102,8 +106,8 @@ graph TD
     end
 
     subgraph Domain_Layer ["Domain Layer (Pure Kotlin)"]
-        PriorityCalc["PriorityCalculator (Score & Clustering)"]
-        DistCalc["DistanceCalculator (Haversine & Radii)"]
+        PriorityCalc["PriorityCalculator (Σκορ & Ομαδοποίηση)"]
+        DistCalc["DistanceCalculator (Τύπος Haversine & Ακτίνες)"]
     end
 
     subgraph Data_Layer ["Data Layer (Repository Pattern)"]
@@ -111,7 +115,7 @@ graph TD
         AuthRepo["AuthRepository"]
     end
 
-    subgraph Cloud ["Cloud & External Services"]
+    subgraph Cloud ["Cloud & Εξωτερικές Υπηρεσίες"]
         Firestore["Cloud Firestore (Real-time NoSQL)"]
         FirebaseAuth["Firebase Authentication"]
         LocationAPI["Fused Location Provider"]
@@ -128,109 +132,109 @@ graph TD
     VM --> LocationAPI
 ```
 
-* **Pure Kotlin Domain:** [`PriorityCalculator.kt`](app/src/main/java/com/example/cityflow/domain/PriorityCalculator.kt) and [`DistanceCalculator.kt`](app/src/main/java/com/example/cityflow/domain/DistanceCalculator.kt) have zero Android framework dependencies, making them 100% testable via unit tests.
-* **Coroutines & Kotlin Flow:** Uses `callbackFlow` to adapt Firebase snapshot listeners into cold/hot reactive streams.
-* **Batch Writes:** Atomic Firestore commits for incident clustering and queue recalculations.
-* **Resource Wrapper:** Generic `Resource<T>` (`Idle`, `Loading`, `Success`, `Error`) for predictable asynchronous UI state handling.
+* **Pure Kotlin Domain:** Τα [`PriorityCalculator.kt`](app/src/main/java/com/example/cityflow/domain/PriorityCalculator.kt) και [`DistanceCalculator.kt`](app/src/main/java/com/example/cityflow/domain/DistanceCalculator.kt) δεν έχουν καμία εξάρτηση από Android APIs, όντας 100% ελέγξιμα μέσω Unit Tests.
+* **Coroutines & Kotlin Flow:** Χρήση του `callbackFlow` για τη μετατροπή των snapshot listeners του Firestore σε ασφαλείς αντιδραστικές ροές δεδομένων.
+* **Atomic Batch Writes:** Ατομικές εγγραφές Firestore για τη διατήρηση συνέπειας κατά την ομαδοποίηση αναφορών και τον αναδρομικό επανυπολογισμό.
+* **Resource Wrapper Pattern:** Generic κλάση `Resource<T>` (`Idle`, `Loading`, `Success`, `Error`) για προβλέψιμη διαχείριση ασύγχρονων καταστάσεων UI.
 
 ---
 
-## 🔑 Demo & Evaluation Accounts
+## 🔑 Προκαθορισμένοι Λογαριασμοί Αξιολόγησης (Demo Accounts)
 
-The app includes built-in demo credentials for immediate testing without external authentication dependencies:
+Για τη διευκόλυνση της αξιολόγησης και της παρουσίασης, η εφαρμογή περιλαμβάνει ενσωματωμένα δοκιμαστικά διαπιστευτήρια:
 
-| Role | Username / Identifier | Password | Description |
+| Ρόλος | Όνομα Χρήστη / Email | Κωδικός | Περιγραφή |
 | :--- | :--- | :--- | :--- |
-| **Administrator** | `admin` | `admin` | Full admin rights, algorithm sliders, employee queue access. |
-| **Employee** | `employee` | `employee` | Municipal officer dashboard, report verification & status actions. |
-| **Citizen** | *(Self Sign-up)* | *(Any)* | Register any account from the app Sign Up screen. |
+| **Administrator** | `admin` | `admin` | Πλήρη δικαιώματα διαχειριστή, ρύθμιση βαρών, πρόσβαση στο dashboard υπαλλήλου. |
+| **Employee** | `employee` | `employee` | Ταμπλό δημοτικού υπαλλήλου, ενέργειες επικύρωσης, ανάθεσης και επίλυσης. |
+| **Citizen** | *(Ελεύθερη Εγγραφή)* | *(Οποιοσδήποτε)* | Εγγραφή νέου πολίτη απευθείας από την οθόνη Sign Up. |
 
-> *Note: Email aliases `admin@cityflow.com` and `employee@cityflow.com` are also accepted.*
-
----
-
-## 📱 Presentation Guide: Running on 2 Emulators
-
-To demonstrate real-time cross-device synchronization during presentations:
-
-1. **Duplicate or Create a Second Emulator:**
-   * In Android Studio, open **Tools** > **Device Manager**.
-   * Click **⋮** on your existing emulator > **Duplicate** (e.g., `Pixel - User 2`).
-2. **Launch Both Emulators Side-by-Side:**
-   * Start both emulators from Device Manager.
-3. **Deploy App to Both Devices:**
-   * In the top toolbar device selector, choose **Select Multiple Devices...**.
-   * Check both emulators and click **Run (▶)** (`Shift + F10`).
-4. **The Live Demo Flow:**
-   * **Phone 1:** Sign in as `admin` / `admin` (open the **Admin Dashboard**).
-   * **Phone 2:** Sign in as `employee` / `employee` (open the **Employee Dashboard**).
-   * On **Phone 1**, slide the **Severity Weight ($w_3$)** up to `4.0` or `5.0` and tap **"Apply Parameters"**.
-   * Watch **Phone 2 in real time**: Existing reports instantly recalculate their scores, switch badges (e.g. Yellow *Medium* ➜ Red *Critical*), and re-order themselves live.
+> *Σημείωση: Γίνονται δεκτά και τα email aliases `admin@cityflow.com` και `employee@cityflow.com`.*
 
 ---
 
-## 🛠️ Tech Stack
+## 📱 Οδηγός Παρουσίασης: Εκτέλεση σε 2 Emulators
 
-* **Language:** Kotlin 2.0.21
-* **UI Framework:** 100% Jetpack Compose with Material 3
-* **Min SDK:** Android 7.0 (API 24) | **Target & Compile SDK:** Android 15 (API 35)
-* **Architecture:** MVVM + Clean Architecture + UDF + Repository Pattern
-* **Asynchronous Programming:** Kotlin Coroutines & StateFlow / SharedFlow
-* **Backend:** Firebase Authentication & Cloud Firestore (NoSQL)
-* **Location Services:** Google Play Services Fused Location Provider & Geocoder
-* **Testing:** JUnit 4 Unit Tests
+Για την επίδειξη του συγχρονισμού σε πραγματικό χρόνο μεταξύ δύο συσκευών κατά την προφορική παρουσίαση:
+
+1. **Δημιουργία 2ου Emulator:**
+   * Στο Android Studio: **Tools** > **Device Manager**.
+   * Πατήστε **⋮** δίπλα στον υπάρχοντα emulator > **Duplicate** (π.χ. `Pixel - User 2`).
+2. **Εκκίνηση και των 2 Συσκευών Side-by-Side:**
+   * Εκκινήστε και τους δύο emulators από το Device Manager.
+3. **Ταυτόχρονη Εγκατάσταση της Εφαρμογής:**
+   * Στην πάνω γραμμή εργαλείων του Android Studio, επιλέξτε **Select Multiple Devices...**.
+   * Επιλέξτε και τους δύο emulators και πατήστε **Run (▶)** (`Shift + F10`).
+4. **Σενάριο Ζωντανής Παρουσίασης:**
+   * **Συσκευή 1:** Συνδεθείτε ως `admin` / `admin` (Οθόνη Διαχειριστή).
+   * **Συσκευή 2:** Συνδεθείτε ως `employee` / `employee` (Οθόνη Υπαλλήλου).
+   * Στη **Συσκευή 1**, αυξήστε το **Βάρος Σοβαρότητας ($w_3$)** στο `4.0` ή `5.0` και πατήστε **"Εφαρμογή Παραμέτρων"**.
+   * **Παρατηρήστε τη Συσκευή 2 σε πραγματικό χρόνο:** Χωρίς καμία ενέργεια στη Συσκευή 2, οι υπάρχουσες αναφορές επανυπολογίζουν άμεσα το σκορ τους, αλλάζουν αυτόματα χρώμα/σήμανση (π.χ. Κίτρινο *Μέτρια* ➜ Κόκκινο *Κρίσιμη*) και αναδιατάσσονται ζωντανά.
 
 ---
 
-## 📁 Project Structure
+## 🛠️ Τεχνολογικό Stack
+
+* **Γλώσσα Προγραμματισμού:** Kotlin 2.0.21
+* **UI Framework:** 100% Jetpack Compose με Material 3
+* **Ελάχιστη Έκδοση (Min SDK):** Android 7.0 (API 24) | **Στοχευμένη Έκδοση (Target SDK):** Android 15 (API 35)
+* **Αρχιτεκτονική:** MVVM + Clean Architecture + UDF + Repository Pattern
+* **Ασύγχρονος Προγραμματισμός:** Kotlin Coroutines & StateFlow / SharedFlow
+* **Cloud Backend:** Firebase Authentication & Cloud Firestore (NoSQL)
+* **Υπηρεσίες Τοποθεσίας:** Google Play Services Fused Location Provider & Geocoder
+* **Unit Testing:** JUnit 4
+
+---
+
+## 📁 Δομή Έργου (Project Structure)
 
 ```text
 com.example.cityflow/
 ├── data/
 │   ├── model/           # Data classes (Report, User, UserRole, ReportCategory, Resource)
 │   └── repository/      # ReportRepository (Firestore batching & flows), AuthRepository
-├── domain/              # Pure Kotlin domain logic
-│   ├── DistanceCalculator.kt  # Haversine distance & geofence checks
-│   └── PriorityCalculator.kt  # Urgency ranking model & cluster detection
+├── domain/              # Pure Kotlin επιχειρησιακή λογική
+│   ├── DistanceCalculator.kt  # Υπολογισμός αποστάσεων Haversine & έλεγχοι geofence
+│   └── PriorityCalculator.kt  # Μοντέλο προτεραιότητας & ανίχνευση clusters
 ├── ui/                  # 100% Jetpack Compose presentation layer
-│   ├── admin/           # AdminDashboardScreen (Algorithm sliders & category overview)
+│   ├── admin/           # AdminDashboardScreen (Sliders παραμέτρων & επισκόπηση κατηγοριών)
 │   ├── auth/            # LoginScreen, RegisterScreen, AuthViewModel
 │   ├── citizen/         # CitizenHomeScreen, SubmitReportScreen, CitizenHomeViewModel
 │   ├── employee/        # EmployeeDashboardScreen, EmployeeDashboardViewModel
 │   ├── stats/           # StatsScreen, StatsCharts, StatsViewModel
-│   ├── profile/         # ProfileScreen (Role overview, settings shortcuts)
-│   ├── common/          # LocalizedModels, SettingsDialog, shared composables
-│   ├── navigation/      # AppNavHost, Screen sealed hierarchy
-│   └── theme/           # Color palettes, Typography, Theme definition
-└── util/                # AppSettings (SharedPreferences & Language), ImageUtils, MapUtils
+│   ├── profile/         # ProfileScreen (Στοιχεία χρήστη & συντομεύσεις ρυθμίσεων)
+│   ├── common/          # LocalizedModels, SettingsDialog, κοινόχρηστα composables
+│   ├── navigation/      # AppNavHost, Screen sealed ιεραρχία
+│   └── theme/           # Παλέτες χρωμάτων, Τυπογραφία, Material 3 Theme
+└── util/                # AppSettings (SharedPreferences & Γλώσσα), ImageUtils, MapUtils
 ```
 
 ---
 
-## 🚀 Setup & Execution
+## 🚀 Εγκατάσταση & Εκτέλεση
 
-### Prerequisites
-* **Android Studio:** Ladybug (2024.2.1) or newer.
-* **JDK:** Java 17 or Java 21 (Temurin / OpenJDK).
+### Προαπαιτούμενα
+* **Android Studio:** Ladybug (2024.2.1) ή νεότερο.
+* **JDK:** Java 17 ή Java 21 (Temurin / OpenJDK).
 * **Android SDK:** Platform 35.
 
-### Building and Running
-1. Clone the repository and open the project in Android Studio.
-2. Ensure `google-services.json` is located in the `app/` folder.
-3. Sync Gradle dependencies: `File > Sync Project with Gradle Files`.
-4. Select a target emulator or connected device and press **Run (Shift + F10)**.
+### Μεταγλώττιση και Εκτέλεση
+1. Κλωνοποιήστε το αποθετήριο και ανοίξτε το project στο Android Studio.
+2. Βεβαιωθείτε ότι το αρχείο `google-services.json` βρίσκεται στον φάκελο `app/`.
+3. Εκτελέστε συγχρονισμό Gradle: `File > Sync Project with Gradle Files`.
+4. Επιλέξτε συσκευή ή εξομοιωτή και πατήστε **Run (Shift + F10)**.
 
-### Running Unit Tests
-Execute the domain logic test suite from terminal or Android Studio:
+### Εκτέλεση Unit Tests
+Εκτελέστε τη σουίτα ελέγχων domain λογικής μέσω τερματικού ή Android Studio:
 ```bash
 ./gradlew testDebugUnitTest
 ```
-The test suite validates:
-* Haversine distance calculations and geofence boundary validation.
-* Priority score calculations for single and clustered reports.
-* Dynamic weight modifications and mathematical score scaling.
+Τα unit tests επιβεβαιώνουν:
+* Την ακρίβεια υπολογισμών αποστάσεων Haversine και των ορίων geofencing.
+* Τον υπολογισμό σκορ προτεραιότητας για μεμονωμένες και ομαδοποιημένες αναφορές.
+* Τη δυναμική αλλαγή βαρών και τη μαθηματική κλιμάκωση του σκορ σοβαρότητας.
 
 ---
 
-## 📄 Documentation
-For detailed architectural breakdowns and lifecycle flowcharts, see [`ARCHITECTURE.md`](ARCHITECTURE.md).
+## 📄 Τεχνική Τεκμηρίωση
+Για αναλυτική περιγραφή των σχεδιαστικών αποφάσεων, διαγραμμάτων καταστάσεων (state diagrams) και συγκρίσεων εναλλακτικών, ανατρέξτε στο αρχείο [`ARCHITECTURE.md`](ARCHITECTURE.md).
