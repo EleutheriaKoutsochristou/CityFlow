@@ -50,6 +50,9 @@ class AuthRepository(
         ) {
             val isEn = AppSettings.currentLanguage.value == "en"
             return if (trimmedPassword == "admin") {
+                if (auth.currentUser == null) {
+                    try { auth.signInAnonymously().await() } catch (_: Exception) {}
+                }
                 Resource.Success(
                     User(
                         id = "hardcoded_admin",
@@ -71,6 +74,9 @@ class AuthRepository(
         ) {
             val isEn = AppSettings.currentLanguage.value == "en"
             return if (trimmedPassword == "employee") {
+                if (auth.currentUser == null) {
+                    try { auth.signInAnonymously().await() } catch (_: Exception) {}
+                }
                 Resource.Success(
                     User(
                         id = "hardcoded_employee",

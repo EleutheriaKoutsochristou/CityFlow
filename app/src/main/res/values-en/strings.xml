@@ -128,7 +128,8 @@
     <string name="admin_weight_proximity">Spatial Proximity Weight (w2): %1$.1f</string>
     <string name="admin_weight_severity">Category Severity Weight (w3): %1$.1f</string>
     <string name="admin_save_weights">Apply Parameters</string>
-    <string name="admin_weights_saved">Parameters updated successfully!</string>
+    <string name="admin_weights_saved">Parameters saved and reports recalculated successfully!</string>
+    <string name="admin_weights_updating">Updating &amp; Recalculating…</string>
     <string name="admin_view_employee_dashboard">View Employee Dashboard</string>
     <string name="admin_switch_to_admin">Admin Settings</string>
     <string name="admin_category_radii_title">Default Notification Radii</string>

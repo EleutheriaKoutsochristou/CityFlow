@@ -128,7 +128,8 @@
     <string name="admin_weight_proximity">Βάρος Χωρικής Εγγύτητας (w2): %1$.1f</string>
     <string name="admin_weight_severity">Βάρος Σοβαρότητας Κατηγορίας (w3): %1$.1f</string>
     <string name="admin_save_weights">Εφαρμογή Παραμέτρων</string>
-    <string name="admin_weights_saved">Οι παράμετροι ενημερώθηκαν επιτυχώς!</string>
+    <string name="admin_weights_saved">Οι παράμετροι ενημερώθηκαν και οι αναφορές επανυπολογίστηκαν!</string>
+    <string name="admin_weights_updating">Ενημέρωση &amp; Επανυπολογισμός…</string>
     <string name="admin_view_employee_dashboard">Προβολή Πίνακα Ελέγχου Υπαλλήλου</string>
     <string name="admin_switch_to_admin">Ρυθμίσεις Διαχειριστή</string>
     <string name="admin_category_radii_title">Προεπιλεγμένες Ακτίνες Ειδοποίησης</string>

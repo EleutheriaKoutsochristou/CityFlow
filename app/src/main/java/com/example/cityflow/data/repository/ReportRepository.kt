@@ -23,6 +23,25 @@ class ReportRepository(
 ) {
 
     private val reportsCollection = firestore.collection("reports")
+    private val configDocRef = firestore.collection("system_config").document("priority_weights")
+
+    init {
+        // Observe algorithm weights from Cloud Firestore in real time to sync across all devices
+        configDocRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                android.util.Log.w("ReportRepository", "Failed to listen to priority weights", error)
+                return@addSnapshotListener
+            }
+            if (snapshot != null && snapshot.exists()) {
+                val wCount = snapshot.getDouble("weightCount")
+                val wProx = snapshot.getDouble("weightProximity")
+                val wSev = snapshot.getDouble("weightSeverity")
+                if (wCount != null) PriorityCalculator.weightCount = wCount
+                if (wProx != null) PriorityCalculator.weightProximity = wProx
+                if (wSev != null) PriorityCalculator.weightSeverity = wSev
+            }
+        }
+    }
 
     /**
      * Submits a new incident report:
@@ -277,6 +296,75 @@ class ReportRepository(
         } catch (e: Exception) {
             val isEn = AppSettings.currentLanguage.value == "en"
             Resource.Error(e.localizedMessage ?: (if (isEn) "Failed to delete report." else "Αποτυχία διαγραφής αναφοράς."), e)
+        }
+    }
+
+    /**
+     * Updates priority algorithm weights in Cloud Firestore and retroactively recalculates
+     * the priority scores of all existing reports in the database using batch writes.
+     *
+     * @param weightCount Weight for report count (w1).
+     * @param weightProximity Weight for spatial proximity (w2).
+     * @param weightSeverity Weight for category severity (w3).
+     * @return [Resource.Success] with the count of recalculated reports, or [Resource.Error].
+     */
+    suspend fun updateWeightsAndRecalculate(
+        weightCount: Double,
+        weightProximity: Double,
+        weightSeverity: Double
+    ): Resource<Int> {
+        return try {
+            // 1. Immediately update in-memory calculator
+            PriorityCalculator.weightCount = weightCount
+            PriorityCalculator.weightProximity = weightProximity
+            PriorityCalculator.weightSeverity = weightSeverity
+
+            // 2. Persist updated weights to Cloud Firestore for cross-device synchronization
+            val weightsData = mapOf(
+                "weightCount" to weightCount,
+                "weightProximity" to weightProximity,
+                "weightSeverity" to weightSeverity,
+                "updatedAt" to System.currentTimeMillis()
+            )
+            configDocRef.set(weightsData).await()
+
+            // 3. Fetch all existing reports to recompute priority scores under the new weights
+            val snapshots = reportsCollection.get().await()
+            val allReports = snapshots.documents.mapNotNull { doc ->
+                try {
+                    doc.toObject(Report::class.java)?.copy(id = doc.id)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+
+            if (allReports.isEmpty()) {
+                return Resource.Success(0)
+            }
+
+            // 4. Recalculate priorityScore for all reports and commit in batches (Firestore limit: 500 writes/batch)
+            var updatedCount = 0
+            val chunkedReports = allReports.chunked(450)
+            for (chunk in chunkedReports) {
+                val batch = firestore.batch()
+                for (report in chunk) {
+                    if (report.id.isNotBlank()) {
+                        val newScore = PriorityCalculator.calculateScore(report, allReports)
+                        val docRef = reportsCollection.document(report.id)
+                        batch.update(docRef, "priorityScore", newScore)
+                        updatedCount++
+                    }
+                }
+                batch.commit().await()
+            }
+
+            Resource.Success(updatedCount)
+        } catch (e: Exception) {
+            val isEn = AppSettings.currentLanguage.value == "en"
+            Resource.Error(
+                e.localizedMessage ?: (if (isEn) "Failed to update weights and recalculate reports." else "Αποτυχία ενημέρωσης παραμέτρων και επανυπολογισμού αναφορών."),
+                e
+            )
         }
     }
 }

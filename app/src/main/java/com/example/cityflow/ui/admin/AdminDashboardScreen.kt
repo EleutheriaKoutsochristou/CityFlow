@@ -24,11 +24,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.cityflow.R
 import com.example.cityflow.data.model.ReportCategory
+import com.example.cityflow.data.model.Resource
 import com.example.cityflow.data.model.User
+import com.example.cityflow.data.repository.ReportRepository
 import com.example.cityflow.domain.PriorityCalculator
 import com.example.cityflow.ui.common.SettingsDialog
 import com.example.cityflow.ui.common.localizedTitle
 import com.example.cityflow.ui.common.localizedAdvice
+import kotlinx.coroutines.launch
 
 /**
  * System Administrator Dashboard Screen.
@@ -55,12 +58,22 @@ fun AdminDashboardScreen(
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val reportRepository = remember { ReportRepository() }
+    var isSaving by remember { mutableStateOf(false) }
 
     // Mutable state sliders for algorithm weights
     var wCount by remember { mutableFloatStateOf(PriorityCalculator.weightCount.toFloat()) }
     var wProximity by remember { mutableFloatStateOf(PriorityCalculator.weightProximity.toFloat()) }
     var wSeverity by remember { mutableFloatStateOf(PriorityCalculator.weightSeverity.toFloat()) }
     var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
+
+    // Keep sliders in sync if PriorityCalculator weights were updated from Firestore
+    LaunchedEffect(PriorityCalculator.weightCount, PriorityCalculator.weightProximity, PriorityCalculator.weightSeverity) {
+        wCount = PriorityCalculator.weightCount.toFloat()
+        wProximity = PriorityCalculator.weightProximity.toFloat()
+        wSeverity = PriorityCalculator.weightSeverity.toFloat()
+    }
 
     Scaffold(
         topBar = {
@@ -280,16 +293,45 @@ fun AdminDashboardScreen(
 
                         Button(
                             onClick = {
-                                PriorityCalculator.weightCount = wCount.toDouble()
-                                PriorityCalculator.weightProximity = wProximity.toDouble()
-                                PriorityCalculator.weightSeverity = wSeverity.toDouble()
-                                Toast.makeText(context, context.getString(R.string.admin_weights_saved), Toast.LENGTH_SHORT).show()
+                                scope.launch {
+                                    isSaving = true
+                                    val result = reportRepository.updateWeightsAndRecalculate(
+                                        weightCount = wCount.toDouble(),
+                                        weightProximity = wProximity.toDouble(),
+                                        weightSeverity = wSeverity.toDouble()
+                                    )
+                                    isSaving = false
+                                    when (result) {
+                                        is Resource.Success -> {
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(R.string.admin_weights_saved),
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                        is Resource.Error -> {
+                                            Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
+                                        }
+                                        else -> Unit
+                                    }
+                                }
                             },
+                            enabled = !isSaving,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(Icons.Default.Save, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(stringResource(R.string.admin_save_weights))
+                            if (isSaving) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    strokeWidth = 2.dp
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(stringResource(R.string.admin_weights_updating))
+                            } else {
+                                Icon(Icons.Default.Save, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(stringResource(R.string.admin_save_weights))
+                            }
                         }
                     }
                 }
