@@ -1,12 +1,5 @@
 # CityFlow 🏙️
 
-[![Language: English](https://img.shields.io/badge/Language-English-blue.svg)](README_EN.md)
-[![Language: Ελληνικά](https://img.shields.io/badge/Γλώσσα-Ελληνικά-lightgrey.svg)](README.md)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-purple.svg)](https://kotlinlang.org/)
-[![Android](https://img.shields.io/badge/Platform-Android%207.0%2B%20(API%2024%2B)-green.svg)](https://developer.android.com/)
-[![Compose](https://img.shields.io/badge/UI-Jetpack%20Compose%20%2F%20Material%203-blue.svg)](https://developer.android.com/jetpack/compose)
-[![Firebase](https://img.shields.io/badge/Backend-Cloud%20Firestore%20%26%20Auth-orange.svg)](https://firebase.google.com/)
-[![University](https://img.shields.io/badge/University%20of%20Piraeus-MSc%20Mobile%20Dev-red.svg)](https://www.cs.unipi.gr/)
 
 > 🇬🇧 **English** | [🇬🇷 Ελληνική Έκδοση (Greek)](README.md)
 

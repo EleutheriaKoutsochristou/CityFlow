@@ -1,13 +1,5 @@
 # CityFlow 🏙️
 
-[![Language: Ελληνικά](https://img.shields.io/badge/Γλώσσα-Ελληνικά-blue.svg)](README.md)
-[![Language: English](https://img.shields.io/badge/Language-English-lightgrey.svg)](README_EN.md)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-purple.svg)](https://kotlinlang.org/)
-[![Android](https://img.shields.io/badge/Platform-Android%207.0%2B%20(API%2024%2B)-green.svg)](https://developer.android.com/)
-[![Compose](https://img.shields.io/badge/UI-Jetpack%20Compose%20%2F%20Material%203-blue.svg)](https://developer.android.com/jetpack/compose)
-[![Firebase](https://img.shields.io/badge/Backend-Cloud%20Firestore%20%26%20Auth-orange.svg)](https://firebase.google.com/)
-[![University](https://img.shields.io/badge/Πανεπιστήμιο%20Πειραιώς-MSc%20Mobile%20Dev-red.svg)](https://www.cs.unipi.gr/)
-
 > 🇬🇷 **Ελληνικά** | [🇬🇧 English Version](README_EN.md)
 
 Το **CityFlow** είναι μια σύγχρονη native εφαρμογή Android για την **Έξυπνη Αστική Κινητικότητα και Διαχείριση Προσβασιμότητας**, που αναπτύχθηκε στο πλαίσιο του μεταπτυχιακού μαθήματος *Ανάπτυξη Εφαρμογών για Κινητές Συσκευές* (Mobile Development) στο **Πανεπιστήμιο Πειραιώς (UniPi)**.
