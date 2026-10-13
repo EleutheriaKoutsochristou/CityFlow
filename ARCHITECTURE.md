@@ -74,7 +74,7 @@ graph TD
   Υπολογίζει δυναμικά το σκορ σοβαρότητας ($P$) κάθε αναφοράς βάσει γραμμικού συνδυασμού κανονικοποιημένων παραγόντων:
   $$P = w_1 \cdot C_{norm} + w_2 \cdot D_{norm} + w_3 \cdot S_{norm}$$
   Όπου:
-  * $w_1, w_2, w_3$: Δυναμικά βάρη ρυθμιζόμενα σε πραγματικό χρόνο από τον Administrator.
+  * $w_1, w_2, w_3$: Δυναμικά βάρη ρυθμιζόμενα σε πραγματικό χρόνο από τον Administrator μέσω του Admin Dashboard, με αυτόματο cross-device συγχρονισμό μέσω Cloud Firestore (`system_config/priority_weights`).
   * $C_{norm}$: Πλήθος παρόμοιων αναφορών στον ίδιο τόπο και χρόνο (Cluster Count).
   * $D_{norm}$: Χωρική εγγύτητα (Spatial Proximity) των αναφορών του ίδιου cluster.
   * $S_{norm}$: Εγγενής σοβαρότητα της κατηγορίας προβλήματος ($1 \dots 5$).
@@ -83,8 +83,9 @@ graph TD
 
 ### 3.4. Data Layer & Repository Pattern
 * **Repository Pattern:** Αποσύνδεση των πηγών δεδομένων από την υπόλοιπη εφαρμογή. Τα ViewModels επικοινωνούν μόνο με το [`ReportRepository`](file:///mnt/c/Users/riaek/AndroidStudioProjects/CityFlow/app/src/main/java/com/example/cityflow/data/repository/ReportRepository.kt) και το [`AuthRepository`](file:///mnt/c/Users/riaek/AndroidStudioProjects/CityFlow/app/src/main/java/com/example/cityflow/data/repository/AuthRepository.kt).
-* **Real-time Data Sync με Kotlin Flow:** Χρήση του `callbackFlow` για τη μετατροπή των snapshot listeners του Firestore σε ασφαλή Kotlin Flows, προσφέροντας άμεση ενημέρωση σε όλες τις συνδεδεμένες συσκευές χωρίς ανάγκη χειροκίνητου pull-to-refresh.
-* **Atomic Batch Writes:** Κατά την υποβολή νέας αναφοράς, ενημερώνονται ατομικά (μέσω `firestore.batch()`) τόσο η νέα αναφορά όσο και όλες οι προηγούμενες αναφορές του ίδιου cluster με το νέο σκορ προτεραιότητας.
+* **Real-time Data Sync με Kotlin Flow & Snapshot Listeners:** Χρήση του `callbackFlow` και Firestore snapshot listeners για την άμεση διάχυση δεδομένων σε όλες τις συνδεδεμένες συσκευές χωρίς ανάγκη χειροκίνητου pull-to-refresh. Συγχρονίζονται real-time τόσο οι αναφορές συμβάντων όσο και οι παράμετροι του αλγορίθμου (`system_config/priority_weights`).
+* **Atomic Batch Writes (Ομαδοποίηση Αναφορών):** Κατά την υποβολή νέας αναφοράς, ενημερώνονται ατομικά (μέσω `firestore.batch()`) τόσο η νέα αναφορά όσο και όλες οι προηγούμενες αναφορές του ίδιου cluster με το νέο σκορ προτεραιότητας.
+* **Αναδρομικός Επανυπολογισμός Ουράς (Retroactive Recalculation):** Κατά την αποθήκευση νέων παραμέτρων βαρών από τον Administrator, η μέθοδος `updateWeightsAndRecalculate()` ενημερώνει τις παραμέτρους στο Cloud Firestore και εκτελεί αναδρομικό επανυπολογισμό όλων των προϋπαρχουσών αναφορών μέσω batch write. Αυτό προκαλεί άμεση αναδιάταξη της ουράς (live re-sorting) και ανανέωση των badges προτεραιότητας (π.χ. Medium ➜ Critical) σε όλες τις συσκευές των υπαλλήλων σε πραγματικό χρόνο.
 
 ---
 
@@ -128,7 +129,7 @@ stateDiagram-v2
   * Φιλτράρισμα ανά κατάσταση και ταξινόμηση βάσει Priority Score.
   * Διαχείριση ροής εργασιών (Έλεγχος ➜ Επικύρωση ➜ Σε εξέλιξη ➜ Επίλυση / Απόρριψη).
 * **ADMIN (Διαχειριστής Συστήματος):**
-  * Δυναμική παραμετροποίηση των βαρών $w_1, w_2, w_3$ του αλγορίθμου.
+  * Δυναμική παραμετροποίηση των βαρών $w_1, w_2, w_3$ του αλγορίθμου μέσω διαδραστικών sliders, με άμεση αποθήκευση στο Cloud Firestore, αυτόματο συγχρονισμό μεταξύ όλων των συνδεδεμένων συσκευών και αναδρομικό επανυπολογισμό (retroactive recalculation) των σκορ ολόκληρης της ουράς ενεργών αναφορών.
   * Ρύθμιση προεπιλεγμένων ακτίνων ειδοποίησης ανά κατηγορία.
   * Πλήρης πρόσβαση στον πίνακα ελέγχου υπαλλήλου και στα επιχειρησιακά στατιστικά.
 
@@ -158,3 +159,4 @@ stateDiagram-v2
 | **Pure Kotlin Domain** | Android-dependent Domain | 100% απομονωμένη επιχειρησιακή λογική, άμεσα εκτελέσιμα Unit Tests. |
 | **Cloud Firestore** | REST API με Custom Backend | Real-time listeners out-of-the-box, offline persistence, μηδενικό server maintenance. |
 | **Role-Based Workflows** | Ενιαία οθόνη για όλους | Αυστηρός διαχωρισμός αρμοδιοτήτων, ασφάλεια και βελτιστοποιημένο UX ανά ρόλο. |
+| **Dynamic Weights & Live Recalculation** | Στατικό / Hardcoded Scoring | Real-time προσαρμογή πολιτικής διαλογής, με άμεση αναδιάταξη της ουράς σε όλες τις συσκευές μέσω Firestore batches. |
